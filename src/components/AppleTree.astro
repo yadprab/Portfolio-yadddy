@@ -126,9 +126,106 @@ const kept = [
     <span class="atree-sep" aria-hidden="true">·</span>
     <span class="atree-caption-num atree-kept">3</span> stay
     <span class="atree-sep" aria-hidden="true">·</span>
-    <span class="atree-caption-muted">scroll to shake</span>
+    <span class="atree-caption-muted" data-default-hint>scroll to shake</span>
   </figcaption>
+
+  <button
+    type="button"
+    class="atree-shake-btn"
+    data-shake-btn
+    hidden
+    aria-label="Enable shake detection and physically shake your phone to tree-shake"
+  >
+    <span class="atree-shake-icon" aria-hidden="true">📱</span>
+    <span class="atree-shake-label" data-shake-label>enable shake</span>
+  </button>
 </figure>
+
+<script>
+  type IOSPermissionEvent = typeof DeviceMotionEvent & {
+    requestPermission?: () => Promise<"granted" | "denied" | "default">;
+  };
+
+  const root = document.querySelector<HTMLElement>(".apple-tree");
+  const svg = root?.querySelector<SVGSVGElement>("svg");
+  const btn = root?.querySelector<HTMLButtonElement>("[data-shake-btn]");
+  const label = root?.querySelector<HTMLElement>("[data-shake-label]");
+  const hint = root?.querySelector<HTMLElement>("[data-default-hint]");
+
+  if (root && svg && btn && label && typeof DeviceMotionEvent !== "undefined") {
+    const isTouch =
+      "ontouchstart" in window ||
+      (navigator.maxTouchPoints !== undefined && navigator.maxTouchPoints > 0);
+
+    const needsPermission =
+      typeof (DeviceMotionEvent as IOSPermissionEvent).requestPermission ===
+      "function";
+
+    if (isTouch) {
+      btn.hidden = false;
+    }
+
+    const SHAKE_SPEED = 800;
+    const COOLDOWN_MS = 2500;
+    const SAMPLE_MIN_MS = 100;
+
+    let listening = false;
+    let lastShake = 0;
+    let last = { x: 0, y: 0, z: 0, t: 0 };
+
+    const triggerShake = () => {
+      svg.classList.remove("tree-shaken");
+      // re-trigger by forcing reflow
+      void svg.offsetWidth;
+      svg.classList.add("tree-shaken");
+      if (hint) hint.textContent = "shaken";
+      label.textContent = "shake again";
+    };
+
+    const onMotion = (e: DeviceMotionEvent) => {
+      const acc = e.accelerationIncludingGravity || e.acceleration;
+      if (!acc || acc.x == null || acc.y == null || acc.z == null) return;
+      const t = e.timeStamp;
+      const dt = t - last.t;
+      if (dt < SAMPLE_MIN_MS) return;
+      const speed =
+        (Math.abs(acc.x + acc.y + acc.z - last.x - last.y - last.z) / dt) *
+        10000;
+      last = { x: acc.x, y: acc.y, z: acc.z, t };
+      if (speed > SHAKE_SPEED && t - lastShake > COOLDOWN_MS) {
+        lastShake = t;
+        triggerShake();
+      }
+    };
+
+    const startListening = () => {
+      if (listening) return;
+      listening = true;
+      window.addEventListener("devicemotion", onMotion, { passive: true });
+      label.textContent = "shake your phone";
+      if (hint) hint.textContent = "ready";
+    };
+
+    btn.addEventListener("click", async () => {
+      if (needsPermission) {
+        try {
+          const result = await (
+            DeviceMotionEvent as IOSPermissionEvent
+          ).requestPermission!();
+          if (result === "granted") {
+            startListening();
+          } else {
+            label.textContent = "permission denied";
+          }
+        } catch {
+          label.textContent = "unavailable";
+        }
+      } else {
+        startListening();
+      }
+    });
+  }
+</script>
 
 <style>
   .apple-tree {
@@ -241,6 +338,71 @@ const kept = [
     50% { transform: translateY(-2px); }
   }
 
+  /* ─── Shake mode: triggered by DeviceMotionEvent ─── */
+
+  .tree-shaken .apple-fall {
+    animation: apple-fall 1100ms cubic-bezier(0.4, 0, 0.6, 1) forwards !important;
+    animation-delay: calc(var(--i) * 110ms) !important;
+    animation-timeline: auto !important;
+  }
+
+  .tree-shaken .atree-canopy,
+  .tree-shaken .atree-branches {
+    animation: canopy-shake 700ms ease-in-out !important;
+  }
+
+  .tree-shaken .apple-keep {
+    animation: apple-cling 700ms ease-in-out !important;
+  }
+
+  @keyframes canopy-shake {
+    0%, 100% { transform: rotate(0); }
+    15% { transform: rotate(-2.2deg); }
+    35% { transform: rotate(2.4deg); }
+    55% { transform: rotate(-1.6deg); }
+    75% { transform: rotate(1.2deg); }
+  }
+
+  @keyframes apple-cling {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    25% { transform: translateY(-3px) rotate(-6deg); }
+    50% { transform: translateY(2px) rotate(4deg); }
+    75% { transform: translateY(-1px) rotate(-2deg); }
+  }
+
+  /* ─── Shake button ──────────────────────────────────── */
+
+  .atree-shake-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6ch;
+    margin-top: var(--space-2xs);
+    padding: var(--space-xs) var(--space-m);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-l);
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      background var(--duration-fast) var(--ease-out);
+  }
+
+  .atree-shake-btn:hover,
+  .atree-shake-btn:focus-visible {
+    color: var(--text-strong);
+    border-color: var(--accent);
+    background: var(--surface-2);
+    outline: none;
+  }
+
+  .atree-shake-icon {
+    font-size: 1.05em;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .atree-canopy,
     .atree-branches,
@@ -250,6 +412,11 @@ const kept = [
     .apple-fall {
       animation: none;
       opacity: 0.3;
+    }
+    .tree-shaken .apple-fall {
+      transition: opacity 200ms;
+      opacity: 0 !important;
+      animation: none !important;
     }
   }
 
