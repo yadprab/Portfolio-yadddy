@@ -1,0 +1,414 @@
+---
+const files = [
+  { depth: 0, name: "dist/", kind: "dir" },
+  { depth: 1, name: "_astro/", kind: "dir", branch: "├──" },
+  { depth: 2, name: "yaddy.a3f4b9.js", kind: "file", size: "12.4 kB", hint: "entry · shell", branch: "│   ├──" },
+  { depth: 2, name: "design-systems.c812dd.js", kind: "file", size: "47.2 kB", hint: "component primitives", branch: "│   ├──" },
+  { depth: 2, name: "devtools.5f9a1c.js", kind: "file", size: "38.9 kB", hint: "growalfred · mf · bundle", branch: "│   ├──" },
+  { depth: 2, name: "applications.8b2e44.js", kind: "file", size: "54.5 kB", hint: "product features", branch: "│   ├──" },
+  { depth: 2, name: "graph.island.9c3d2a.js", kind: "file", size: "3.1 kB", hint: "react · dep-graph island", branch: "│   ├──" },
+  { depth: 2, name: "styles.5f9a1c.css", kind: "file", size: "8.0 kB", hint: "vanilla css · circe fonts", branch: "│   └──" },
+  { depth: 1, name: "fonts/", kind: "dir", branch: "├──" },
+  { depth: 2, name: "CRC25.woff", kind: "file", size: "29 kB", hint: "circe extra light", branch: "│   ├──" },
+  { depth: 2, name: "CRC55.woff", kind: "file", size: "30 kB", hint: "circe", branch: "│   └──" },
+  { depth: 1, name: "index.html", kind: "file", size: "1.8 kB", hint: "shell · pre-rendered", branch: "├──" },
+  { depth: 1, name: "favicon.svg", kind: "file", size: "0.3 kB", hint: "static", branch: "├──" },
+  { depth: 1, name: "contact.a3f4b9.js", kind: "file", size: "0.4 kB", hint: "next stage · destructure to read", branch: "└──", highlight: true },
+];
+---
+
+<section class="stage" id="stage-output" aria-label="build output">
+  <header class="stage-tag">
+    <span class="num">08</span>
+    <span class="name">output</span>
+  </header>
+
+  <p class="lede">
+    The artifacts. Hashed names for long-term caching — change a byte, a hash flips,
+    the browser re-fetches only what moved.
+  </p>
+
+  <div class="dist">
+    <header class="dist-head">
+      <span class="dist-cmd">
+        <span class="prompt">$</span> ls -la dist/
+      </span>
+      <span class="dist-meta">last build: 0.23s ago</span>
+    </header>
+
+    <div class="tree">
+      {files.map((f) => (
+        <div class={`row row-d${f.depth} ${f.highlight ? "row-hl" : ""}`}>
+          <span class="branch" aria-hidden="true">{f.branch ?? ""}</span>
+          <span class={`name name-${f.kind}`}>{f.name}</span>
+          {f.size && <span class="size">{f.size}</span>}
+          {f.hint && <span class="hint">{f.hint}</span>}
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="report">
+    <div class="report-hero">
+      <div class="hero-text">
+        <span class="hero-label">vs previous build</span>
+        <span class="hero-num">−91%</span>
+      </div>
+      <p class="hero-note">
+        17.4 MB → 39 kB transferred · production · brotli
+      </p>
+    </div>
+
+    <div class="report-metrics">
+      <div class="metric">
+        <span class="metric-label">built in</span>
+        <span class="metric-value">
+          0.23<span class="metric-unit">s</span>
+        </span>
+      </div>
+
+      <div class="metric">
+        <span class="metric-label">raw</span>
+        <span class="metric-value">
+          196.6<span class="metric-unit">kB</span>
+        </span>
+        <span class="metric-delta metric-delta-muted">unminified</span>
+      </div>
+
+      <div class="metric">
+        <span class="metric-label">gzip</span>
+        <span class="metric-value">
+          52<span class="metric-unit">kB</span>
+        </span>
+        <span class="metric-delta">−74%</span>
+      </div>
+
+      <div class="metric metric-shipped">
+        <span class="metric-label">brotli</span>
+        <span class="metric-value">
+          39<span class="metric-unit">kB</span>
+        </span>
+        <span class="metric-delta">−80% · shipped</span>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footnote">
+    <span class="check">✓</span>
+    <span>build emitted</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">0 errors · 0 warnings</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">contact.js ready</span>
+  </footer>
+</section>
+
+<style>
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    padding: var(--space-3xl) var(--space-l);
+    max-width: var(--content-max);
+    margin: 0 auto;
+    border-top: 1px dashed var(--border);
+    display: grid;
+    gap: var(--space-xl);
+    align-content: start;
+  }
+
+  .stage-tag {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+  }
+
+  .stage-tag .num { color: var(--accent); letter-spacing: 0.1em; }
+  .stage-tag .name { color: var(--built); }
+  .stage-tag .name::before { content: "// "; color: var(--border); }
+
+  .lede {
+    color: var(--muted);
+    font-size: var(--step-0);
+    max-width: 64ch;
+  }
+
+  /* ─── dist tree ──────────────────────────────────── */
+
+  .dist {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    font-family: var(--font-mono);
+  }
+
+  .dist-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--space-s) var(--space-m);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--step--1);
+  }
+
+  .dist-cmd {
+    color: var(--text);
+  }
+
+  .dist-cmd .prompt {
+    color: var(--accent);
+    margin-right: 0.5ch;
+  }
+
+  .dist-meta {
+    color: var(--muted);
+  }
+
+  .tree {
+    padding: var(--space-m) var(--space-s);
+    display: grid;
+    gap: 2px;
+    font-size: var(--step-0);
+    overflow-x: auto;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: var(--space-s);
+    align-items: baseline;
+    padding: 2px var(--space-xs);
+    border-radius: var(--radius-s);
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+
+  .row:hover {
+    background: var(--surface-2);
+  }
+
+  .row-d0 .name {
+    color: var(--text-strong);
+    font-size: var(--step-1);
+  }
+
+  .branch {
+    color: var(--border);
+    white-space: pre;
+    font-size: 0.92em;
+  }
+
+  .name-dir {
+    color: var(--built);
+  }
+
+  .name-file {
+    color: var(--text);
+  }
+
+  .size {
+    color: var(--muted);
+    font-size: var(--step--1);
+    text-align: right;
+  }
+
+  .hint {
+    color: var(--muted);
+    font-size: var(--step--1);
+    border-left: 1px solid var(--border);
+    padding-left: var(--space-s);
+  }
+
+  .row-hl {
+    background: rgb(232 163 61 / 0.06);
+  }
+
+  .row-hl .name {
+    color: var(--accent);
+  }
+
+  .row-hl .hint {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    opacity: 0.85;
+  }
+
+  /* ─── build report ───────────────────────────────── */
+
+  .report {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    font-family: var(--font-mono);
+  }
+
+  .report-hero {
+    padding: var(--space-l) var(--space-l) var(--space-m);
+    background:
+      radial-gradient(
+        140% 100% at 0% 0%,
+        rgb(232 163 61 / 0.06) 0%,
+        transparent 60%
+      );
+    border-bottom: 1px dashed var(--border);
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .hero-text {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    justify-content: space-between;
+  }
+
+  .hero-label {
+    font-size: var(--step--1);
+    color: var(--muted);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+    order: 2;
+  }
+
+  .hero-num {
+    font-family: var(--font-display);
+    font-size: var(--step-6);
+    line-height: 1;
+    color: var(--accent);
+    letter-spacing: -0.04em;
+    text-shadow: 0 0 32px rgb(232 163 61 / 0.22);
+    white-space: nowrap;
+    order: 1;
+  }
+
+  .hero-note {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .report-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+
+  .metric {
+    padding: var(--space-m) var(--space-l);
+    display: grid;
+    gap: var(--space-2xs);
+    border-right: 1px solid var(--border);
+    align-content: start;
+    min-width: 0;
+  }
+
+  .metric:last-child {
+    border-right: 0;
+  }
+
+  .metric-label {
+    font-size: var(--step--1);
+    color: var(--muted);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  .metric-value {
+    font-size: var(--step-3);
+    color: var(--text-strong);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.2ch;
+  }
+
+  .metric-unit {
+    font-size: 0.5em;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+  }
+
+  .metric-delta {
+    font-size: var(--step--1);
+    color: var(--accent);
+    margin-top: var(--space-3xs);
+  }
+
+  .metric-delta-muted {
+    color: var(--muted);
+  }
+
+  .metric-shipped {
+    background: rgb(79 140 126 / 0.05);
+  }
+
+  .metric-shipped .metric-value {
+    color: var(--built);
+  }
+
+  .metric-shipped .metric-delta {
+    color: var(--built);
+  }
+
+  /* ─── Footnote ───────────────────────────────────── */
+
+  .footnote {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: center;
+    padding-top: var(--space-l);
+    border-top: 1px dashed var(--border);
+  }
+
+  .footnote .check { color: var(--built); }
+  .footnote .sep { color: var(--border); }
+  .footnote .muted { color: var(--muted); }
+
+  @media (max-width: 760px) {
+    .stage {
+      padding: var(--space-2xl) var(--space-m);
+    }
+
+    .row {
+      grid-template-columns: auto 1fr auto;
+      gap: var(--space-xs);
+    }
+
+    .hint {
+      display: none;
+    }
+
+    .tree {
+      font-size: 0.82rem;
+    }
+
+    .report-metrics {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .metric {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .metric:nth-child(odd) {
+      border-right: 1px solid var(--border);
+    }
+
+    .metric:nth-last-child(-n+2) {
+      border-bottom: 0;
+    }
+  }
+</style>

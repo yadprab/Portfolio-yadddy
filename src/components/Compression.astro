@@ -1,0 +1,545 @@
+---
+const before = [
+  { name: "index.html", status: 200, type: "doc", size: "2.1 kB", sizeBytes: 2150, ms: 18, bar: 1 },
+  { name: "main.bundle.js", status: 200, type: "script", size: "16.4 MB", sizeBytes: 16400000, ms: 4820, bar: 100, severe: true },
+  { name: "vendor.js", status: 200, type: "script", size: "890 kB", sizeBytes: 890000, ms: 220, bar: 5 },
+  { name: "styles.css", status: 200, type: "css", size: "112 kB", sizeBytes: 112000, ms: 95, bar: 2 },
+];
+
+const after = [
+  { name: "index.html", status: 200, type: "doc", size: "1.8 kB", ms: 14, bar: 6 },
+  { name: "main.a3f4b9.js", status: 200, type: "script", size: "39 kB", ms: 44, bar: 28 },
+  { name: "vendor.c812dd.js", status: 200, type: "script", size: "92 kB", ms: 96, bar: 60 },
+  { name: "styles.5f9a1c.css", status: 200, type: "css", size: "8 kB", ms: 22, bar: 14 },
+];
+
+const encodings = [
+  { label: "uncompressed", size: "630 kB", bytes: 630, pct: 100 },
+  { label: "gzip", size: "190 kB", bytes: 190, pct: 30, note: "~70% smaller" },
+  { label: "brotli", size: "137 kB", bytes: 137, pct: 22, note: "~78% smaller · default" },
+];
+---
+
+<section class="stage" id="stage-compress" aria-label="compression and network delivery">
+  <header class="stage-tag">
+    <span class="num">05</span>
+    <span class="name">compression</span>
+  </header>
+
+  <p class="lede">
+    A tree-shaken bundle still has to travel. Delivery is the other half — and the
+    place most apps quietly leak seconds.
+  </p>
+
+  <!-- BEFORE / AFTER NETWORK PANELS -->
+  <div class="panels">
+    <article class="panel panel-before">
+      <header class="panel-head">
+        <span class="panel-tag">network</span>
+        <span class="panel-meta">build: legacy · no compression · no split</span>
+      </header>
+
+      <div class="row row-head" role="presentation">
+        <span class="c-name">name</span>
+        <span class="c-status">status</span>
+        <span class="c-type">type</span>
+        <span class="c-size">size</span>
+        <span class="c-time">time</span>
+      </div>
+
+      {before.map((r) => (
+        <div class={`row ${r.severe ? "row-severe" : ""}`}>
+          <span class="c-name">{r.name}</span>
+          <span class="c-status status">{r.status}</span>
+          <span class="c-type">{r.type}</span>
+          <span class={`c-size ${r.severe ? "size-severe" : ""}`}>{r.size}</span>
+          <span class="c-time">
+            <span class="bar bar-before" style={`--w: ${r.bar}%`} aria-hidden="true"></span>
+            <span class="ms">{r.ms} ms</span>
+          </span>
+        </div>
+      ))}
+
+      <footer class="panel-foot">
+        <span>4 requests</span>
+        <span class="sep" aria-hidden="true">·</span>
+        <span class="bad">17.4 MB transferred</span>
+        <span class="sep" aria-hidden="true">·</span>
+        <span class="bad">5.15 s</span>
+      </footer>
+    </article>
+
+    <div class="arrow" aria-hidden="true">
+      <span class="arrow-line"></span>
+      <span class="arrow-text">tree-shake · split · brotli</span>
+      <span class="arrow-line"></span>
+    </div>
+
+    <article class="panel panel-after">
+      <header class="panel-head">
+        <span class="panel-tag">network</span>
+        <span class="panel-meta">build: current · brotli · code-split</span>
+      </header>
+
+      <div class="row row-head" role="presentation">
+        <span class="c-name">name</span>
+        <span class="c-status">status</span>
+        <span class="c-type">type</span>
+        <span class="c-size">size</span>
+        <span class="c-time">time</span>
+      </div>
+
+      {after.map((r) => (
+        <div class="row">
+          <span class="c-name">{r.name}</span>
+          <span class="c-status status">{r.status}</span>
+          <span class="c-type">{r.type}</span>
+          <span class="c-size size-good">{r.size}</span>
+          <span class="c-time">
+            <span class="bar bar-after" style={`--w: ${r.bar}%`} aria-hidden="true"></span>
+            <span class="ms">{r.ms} ms</span>
+          </span>
+        </div>
+      ))}
+
+      <footer class="panel-foot">
+        <span>4 requests</span>
+        <span class="sep" aria-hidden="true">·</span>
+        <span class="good">141 kB transferred</span>
+        <span class="sep" aria-hidden="true">·</span>
+        <span class="good">176 ms</span>
+      </footer>
+    </article>
+  </div>
+
+  <!-- COMPRESSION ENCODING COMPARISON -->
+  <div class="encodings">
+    <header class="encodings-head">
+      <h3 class="encodings-title">same bytes, three encodings</h3>
+      <p class="encodings-sub">
+        Brotli ships in every modern browser. It out-compresses gzip on text by
+        ~20%. Most production stacks still default to gzip.
+      </p>
+    </header>
+
+    <div class="enc-rows">
+      {encodings.map((e, i) => (
+        <div class="enc-row" style={`--i: ${i}`}>
+          <div class="enc-label">
+            <span class="enc-name">{e.label}</span>
+            {e.note && <span class="enc-note">{e.note}</span>}
+          </div>
+          <div class="enc-bar-wrap">
+            <div class="enc-bar" style={`--target: ${e.pct}%`}></div>
+          </div>
+          <div class="enc-size">{e.size}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <footer class="footnote">
+    <span class="check">✓</span>
+    <span>compression applied</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">17.4 MB → 141 kB transferred</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">−99.2% over the wire</span>
+  </footer>
+</section>
+
+<style>
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    padding: var(--space-3xl) var(--space-l);
+    max-width: var(--content-max);
+    margin: 0 auto;
+    border-top: 1px dashed var(--border);
+    display: grid;
+    gap: var(--space-xl);
+    align-content: start;
+  }
+
+  .stage-tag {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+  }
+
+  .stage-tag .num {
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .stage-tag .name {
+    color: var(--built);
+  }
+
+  .stage-tag .name::before {
+    content: "// ";
+    color: var(--border);
+  }
+
+  .lede {
+    color: var(--muted);
+    font-size: var(--step-0);
+    max-width: 60ch;
+  }
+
+  /* ─── Network panels ─────────────────────────────── */
+
+  .panels {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    overflow: hidden;
+  }
+
+  .panel-before {
+    border-color: rgb(184 74 62 / 0.35);
+  }
+
+  .panel-after {
+    border-color: rgb(79 140 126 / 0.4);
+  }
+
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--space-s) var(--space-m);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-tag {
+    color: var(--built);
+    letter-spacing: 0.05em;
+  }
+
+  .panel-tag::before {
+    content: "▼ ";
+    color: var(--muted);
+  }
+
+  .panel-meta {
+    color: var(--muted);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 2fr 0.6fr 0.7fr 0.8fr 1.6fr;
+    gap: var(--space-s);
+    padding: var(--space-2xs) var(--space-m);
+    align-items: center;
+    border-bottom: 1px solid rgb(30 42 45 / 0.5);
+  }
+
+  .row:last-of-type {
+    border-bottom: 0;
+  }
+
+  .row-head {
+    color: var(--muted);
+    background: rgb(13 19 21 / 0.5);
+    padding-top: var(--space-xs);
+    padding-bottom: var(--space-xs);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  .row:not(.row-head):hover {
+    background: rgb(26 36 38 / 0.5);
+  }
+
+  .c-name {
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .row-severe .c-name {
+    color: var(--error);
+  }
+
+  .status {
+    color: var(--built);
+  }
+
+  .c-type {
+    color: var(--muted);
+  }
+
+  .c-size {
+    color: var(--text);
+    text-align: right;
+  }
+
+  .size-severe {
+    color: var(--error);
+    font-weight: 700;
+  }
+
+  .size-good {
+    color: var(--built);
+  }
+
+  .c-time {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--muted);
+  }
+
+  .bar {
+    height: 6px;
+    border-radius: 1px;
+    flex-shrink: 0;
+    width: 0;
+    animation: fill 900ms var(--ease-out) forwards;
+    animation-delay: 200ms;
+  }
+
+  .bar-before {
+    background: linear-gradient(to right, var(--error), rgb(184 74 62 / 0.5));
+  }
+
+  .bar-after {
+    background: linear-gradient(to right, var(--built), rgb(79 140 126 / 0.5));
+  }
+
+  @supports (animation-timeline: view()) {
+    .bar {
+      animation: fill linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 50%;
+      animation-delay: 0ms;
+    }
+  }
+
+  @keyframes fill {
+    to { width: var(--w); }
+  }
+
+  .ms {
+    font-size: 0.9em;
+    color: var(--muted);
+  }
+
+  .panel-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    padding: var(--space-s) var(--space-m);
+    background: var(--surface-2);
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .panel-foot .bad {
+    color: var(--error);
+  }
+
+  .panel-foot .good {
+    color: var(--built);
+  }
+
+  .panel-foot .sep {
+    color: var(--border);
+  }
+
+  /* arrow between panels */
+  .arrow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    padding: var(--space-2xs) var(--space-s);
+  }
+
+  .arrow-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .arrow-text::before {
+    content: "↓ ";
+    color: var(--accent);
+  }
+
+  /* ─── Encoding comparison ────────────────────────── */
+
+  .encodings {
+    display: grid;
+    gap: var(--space-l);
+    padding: var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+  }
+
+  .encodings-title {
+    font-family: var(--font-mono);
+    font-size: var(--step-1);
+    font-weight: 400;
+    color: var(--text-strong);
+    margin: 0 0 var(--space-xs);
+    letter-spacing: 0;
+  }
+
+  .encodings-sub {
+    color: var(--muted);
+    max-width: 60ch;
+    font-size: var(--step--1);
+  }
+
+  .enc-rows {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .enc-row {
+    display: grid;
+    grid-template-columns: 1.3fr 3fr 0.6fr;
+    gap: var(--space-m);
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  .enc-label {
+    display: grid;
+    gap: 1px;
+  }
+
+  .enc-name {
+    color: var(--text-strong);
+  }
+
+  .enc-note {
+    color: var(--muted);
+    font-size: 0.85em;
+  }
+
+  .enc-bar-wrap {
+    height: 12px;
+    background: var(--surface-2);
+    border-radius: 2px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .enc-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(to right, var(--accent), var(--accent-dim));
+    animation: enc-grow 900ms var(--ease-out) forwards;
+    animation-delay: calc(var(--i) * 180ms + 300ms);
+  }
+
+  .enc-row:nth-child(1) .enc-bar {
+    background: linear-gradient(to right, var(--error), rgb(184 74 62 / 0.4));
+  }
+
+  .enc-row:nth-child(3) .enc-bar {
+    background: linear-gradient(to right, var(--built), rgb(79 140 126 / 0.5));
+  }
+
+  @supports (animation-timeline: view()) {
+    .enc-bar {
+      animation: enc-grow linear both;
+      animation-timeline: view();
+      animation-range: entry 20% cover 60%;
+      animation-delay: 0ms;
+    }
+  }
+
+  @keyframes enc-grow {
+    to { width: var(--target); }
+  }
+
+  .enc-size {
+    color: var(--text);
+    text-align: right;
+  }
+
+  /* ─── Footnote ───────────────────────────────────── */
+
+  .footnote {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: center;
+    padding-top: var(--space-l);
+    border-top: 1px dashed var(--border);
+  }
+
+  .footnote .check {
+    color: var(--built);
+  }
+
+  .footnote .sep {
+    color: var(--border);
+  }
+
+  .footnote .muted {
+    color: var(--muted);
+  }
+
+  @media (max-width: 760px) {
+    .stage {
+      padding: var(--space-2xl) var(--space-m);
+    }
+
+    .panel {
+      font-size: 0.78rem;
+    }
+
+    .row {
+      grid-template-columns: 2fr 0.5fr 1fr;
+      grid-template-rows: auto auto;
+      gap: var(--space-2xs) var(--space-s);
+    }
+
+    .row .c-type,
+    .row .c-size {
+      display: none;
+    }
+
+    .row .c-time {
+      grid-column: 1 / -1;
+    }
+
+    .row-head .c-type,
+    .row-head .c-size {
+      display: none;
+    }
+
+    .enc-row {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xs);
+    }
+
+    .enc-size {
+      text-align: left;
+    }
+  }
+</style>

@@ -1,0 +1,57 @@
+---
+---
+
+<div class="progress" aria-hidden="true">
+  <div class="progress-fill"></div>
+</div>
+
+<style>
+  @property --progress {
+    syntax: "<percentage>";
+    initial-value: 0%;
+    inherits: false;
+  }
+
+  .progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: transparent;
+    z-index: 11;
+    pointer-events: none;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(
+      to right,
+      var(--accent) 0%,
+      var(--accent-dim) 70%,
+      var(--built) 100%
+    );
+    box-shadow: 0 0 8px rgb(232 163 61 / 0.4);
+    transform-origin: left center;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .progress-fill {
+      width: var(--progress);
+      animation: build linear both;
+      animation-timeline: scroll(root);
+    }
+
+    @keyframes build {
+      from { --progress: 0%; }
+      to { --progress: 100%; }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress-fill {
+      width: 0;
+    }
+  }
+</style>

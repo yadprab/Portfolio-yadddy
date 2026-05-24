@@ -1,0 +1,157 @@
+.wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+.canvas:active {
+  cursor: grabbing;
+}
+
+.edge {
+  stroke: var(--border);
+  stroke-width: 1;
+  transition: stroke var(--duration-fast) var(--ease-out),
+    stroke-opacity var(--duration-fast) var(--ease-out);
+}
+
+.edgeActive {
+  stroke: var(--accent);
+  stroke-opacity: 0.6;
+}
+
+.edgeDim {
+  stroke-opacity: 0.25;
+}
+
+.node {
+  cursor: pointer;
+  transition: filter var(--duration-fast) var(--ease-out);
+}
+
+.nodeDim {
+  opacity: 0.25;
+}
+
+.nodeCircle {
+  transition: stroke var(--duration-fast) var(--ease-out),
+    stroke-width var(--duration-fast) var(--ease-out),
+    fill var(--duration-fast) var(--ease-out);
+}
+
+.skill .nodeCircle {
+  fill: rgb(79 140 126 / 0.18);
+  stroke: var(--built);
+  stroke-width: 1.25;
+}
+
+.project .nodeCircle {
+  fill: rgb(232 163 61 / 0.2);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.meta .nodeCircle {
+  fill: rgb(92 102 105 / 0.18);
+  stroke: var(--muted);
+  stroke-width: 1.25;
+}
+
+.active .nodeCircle {
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+.skill.active .nodeCircle { color: var(--built); }
+.project.active .nodeCircle { color: var(--accent); }
+.meta.active .nodeCircle { color: var(--muted); }
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--text);
+  text-anchor: middle;
+  pointer-events: none;
+  user-select: none;
+  transition: fill var(--duration-fast) var(--ease-out);
+}
+
+.labelExt {
+  fill: var(--built);
+}
+
+.active .label {
+  fill: var(--text-strong);
+}
+
+.legend {
+  position: absolute;
+  bottom: var(--space-s);
+  left: var(--space-s);
+  display: flex;
+  gap: var(--space-m);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5ch;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+}
+
+.legendItem.skill { color: var(--built); }
+.legendItem.project { color: var(--accent); }
+.legendItem.meta { color: var(--muted); }
+
+.hint {
+  position: absolute;
+  top: var(--space-s);
+  right: var(--space-s);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.hint kbd {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--text);
+  background: var(--surface-2);
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .wrap {
+    aspect-ratio: 1 / 1;
+  }
+  .hint {
+    display: none;
+  }
+  .label {
+    font-size: 9.5px;
+  }
+}

@@ -1,0 +1,113 @@
+---
+---
+
+<header class="bar">
+  <a class="mark" href="/">
+    <span class="mark-bracket">[</span>
+    yaddev
+    <span class="mark-bracket">]</span>
+  </a>
+
+  <nav class="meta" aria-label="build status">
+    <span class="dot" aria-hidden="true"></span>
+    <span class="label">
+      <span>build</span>
+      <span class="label-sep" aria-hidden="true">·</span>
+      <span class="status">live</span>
+    </span>
+    <span class="sep" aria-hidden="true">|</span>
+    <button class="toggle" type="button" disabled aria-label="switch view mode">
+      view: <strong>built</strong>
+    </button>
+  </nav>
+</header>
+
+<style>
+  .bar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-s) var(--space-l);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    background: linear-gradient(
+      to bottom,
+      rgb(10 14 15 / 0.92) 0%,
+      rgb(10 14 15 / 0) 100%
+    );
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .mark {
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+
+  .mark-bracket {
+    color: var(--accent);
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--built);
+    box-shadow: 0 0 8px var(--built-glow);
+    animation: pulse 2.4s var(--ease-in-out) infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .label {
+    display: inline-flex;
+    gap: 0.4ch;
+    align-items: baseline;
+  }
+
+  .label-sep {
+    color: var(--border);
+  }
+
+  .status {
+    color: var(--built);
+  }
+
+  .sep {
+    color: var(--border);
+  }
+
+  .toggle {
+    color: var(--muted);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  .toggle strong {
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  @media (max-width: 640px) {
+    .bar {
+      padding: var(--space-xs) var(--space-m);
+    }
+    .sep,
+    .toggle {
+      display: none;
+    }
+  }
+</style>

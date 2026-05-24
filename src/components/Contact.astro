@@ -1,0 +1,469 @@
+---
+const exports = [
+  { key: "email", value: "hello@yaddev.com", href: "mailto:hello@yaddev.com" },
+  { key: "github", value: "github.com/yadprab", href: "https://github.com/yadprab" },
+  { key: "linkedin", value: "linkedin.com/in/yathavan-gomathi", href: "https://linkedin.com/in/yathavan-gomathi" },
+  { key: "chess", value: "chess.com/member/nothinglikezero", href: "https://chess.com/member/nothinglikezero" },
+  { key: "x", value: "x.com/yadprab", href: "https://x.com/yadprab" },
+];
+---
+
+<section class="stage" id="stage-contact" aria-label="contact">
+  <header class="stage-tag">
+    <span class="num">09</span>
+    <span class="name">contact</span>
+  </header>
+
+  <p class="lede">
+    The bundle's last export. Destructure what you need.
+  </p>
+
+  <div class="terminal">
+    <header class="terminal-head">
+      <span class="terminal-tag">contact.a3f4b9.js</span>
+      <span class="terminal-meta">loaded · 0.4 kB · cache-hit</span>
+    </header>
+
+    <pre class="snippet"><code>{`const { `}<span class="key">email</span>{`, `}<span class="key">github</span>{`, `}<span class="key">linkedin</span>{`, `}<span class="key">chess</span>{`, `}<span class="key">x</span>{` } = await `}<span class="fn">import</span>{`('./contact');`}</code></pre>
+
+    <div class="table">
+      {exports.map((e) => (
+        <a class="export" href={e.href} target={e.href.startsWith("http") ? "_blank" : undefined} rel={e.href.startsWith("http") ? "noopener" : undefined}>
+          <span class="export-key">{e.key}</span>
+          <span class="export-arrow" aria-hidden="true">→</span>
+          <span class="export-value">{e.value}</span>
+          <span class="export-icon" aria-hidden="true">↗</span>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <div class="terminal-live">
+    <header class="terminal-head">
+      <span class="terminal-tag">yaddy@portfolio:~</span>
+      <span class="terminal-meta">
+        <span class="dot" aria-hidden="true"></span>
+        running
+      </span>
+    </header>
+
+    <pre class="terminal-body" data-terminal aria-live="off"></pre>
+  </div>
+</section>
+
+<script>
+  const body = document.querySelector<HTMLPreElement>("[data-terminal]");
+  if (body) {
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    const script: { cmd: string; out: string[] }[] = [
+      {
+        cmd: "yaddy --version",
+        out: [
+          `yaddy/1.0.0 · built ${today}`,
+          "9 stages · 39 kB shipped · 0 warnings",
+          "exit code: 0",
+        ],
+      },
+      {
+        cmd: "ls deps/",
+        out: [
+          "react        typescript          module-federation",
+          "node         astro               vite              motion",
+        ],
+      },
+      {
+        cmd: "stat status",
+        out: ["open to interesting frontend work"],
+      },
+      {
+        cmd: "cat years.ts",
+        out: ["export default 4;"],
+      },
+      {
+        cmd: "uptime",
+        out: ["sde2 at growfin · chennai · still curious"],
+      },
+      {
+        cmd: "echo $WHY",
+        out: ["because the bundle still has more to give"],
+      },
+    ];
+
+    const sleep = (ms: number) =>
+      new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+    let running = false;
+    let stopped = false;
+
+    const appendLine = (cls: string): HTMLSpanElement => {
+      const line = document.createElement("span");
+      line.className = `t-line ${cls}`;
+      body.appendChild(line);
+      return line;
+    };
+
+    const typeInto = async (
+      target: HTMLSpanElement,
+      text: string,
+      base = 32
+    ) => {
+      for (const ch of text) {
+        if (stopped) return;
+        target.textContent += ch;
+        await sleep(base + Math.random() * 28);
+      }
+    };
+
+    const renderCycle = async () => {
+      for (const entry of script) {
+        if (stopped) return;
+
+        const line = appendLine("t-cmd");
+        const prompt = document.createElement("span");
+        prompt.className = "t-prompt";
+        prompt.textContent = "$ ";
+        line.appendChild(prompt);
+
+        const cmd = document.createElement("span");
+        line.appendChild(cmd);
+
+        await typeInto(cmd, entry.cmd);
+        if (stopped) return;
+        await sleep(360);
+
+        for (const out of entry.out) {
+          if (stopped) return;
+          const outLine = appendLine("t-out");
+          outLine.textContent = out;
+          await sleep(110);
+        }
+
+        body.scrollTop = body.scrollHeight;
+        await sleep(1600);
+      }
+    };
+
+    const loop = async () => {
+      if (running || stopped) return;
+      running = true;
+      while (!stopped) {
+        await renderCycle();
+        if (stopped) break;
+        await sleep(700);
+        body.innerHTML = "";
+      }
+      running = false;
+    };
+
+    if (reduced) {
+      script.forEach((entry) => {
+        const line = appendLine("t-cmd");
+        line.innerHTML = `<span class="t-prompt">$ </span>${entry.cmd}`;
+        entry.out.forEach((out) => {
+          const outLine = appendLine("t-out");
+          outLine.textContent = out;
+        });
+      });
+    } else {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              stopped = false;
+              loop();
+            } else {
+              stopped = true;
+              running = false;
+            }
+          }
+        },
+        { rootMargin: "120px" }
+      );
+      io.observe(body);
+    }
+  }
+</script>
+
+<style>
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    padding: var(--space-3xl) var(--space-l) var(--space-2xl);
+    max-width: var(--content-max);
+    margin: 0 auto;
+    border-top: 1px dashed var(--border);
+    display: grid;
+    gap: var(--space-xl);
+    align-content: start;
+  }
+
+  .stage-tag {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+  }
+
+  .stage-tag .num { color: var(--accent); letter-spacing: 0.1em; }
+  .stage-tag .name { color: var(--built); }
+  .stage-tag .name::before { content: "// "; color: var(--border); }
+
+  .lede {
+    color: var(--muted);
+    font-size: var(--step-0);
+    max-width: 60ch;
+  }
+
+  /* ─── terminal ───────────────────────────────────── */
+
+  .terminal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    font-family: var(--font-mono);
+  }
+
+  .terminal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--space-s) var(--space-m);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--step--1);
+  }
+
+  .terminal-tag {
+    color: var(--built);
+  }
+
+  .terminal-tag::before {
+    content: "▼ ";
+    color: var(--muted);
+  }
+
+  .terminal-meta {
+    color: var(--muted);
+  }
+
+  .snippet {
+    margin: 0;
+    padding: var(--space-m);
+    font-size: var(--step-0);
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .snippet .key {
+    color: var(--accent);
+  }
+
+  .snippet .fn {
+    color: var(--built);
+  }
+
+  .table {
+    display: grid;
+    gap: 0;
+  }
+
+  .export {
+    display: grid;
+    grid-template-columns: 120px auto 1fr auto;
+    gap: var(--space-s);
+    align-items: baseline;
+    padding: var(--space-m);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--step-0);
+    color: var(--text);
+    text-decoration: none;
+    transition: background var(--duration-fast) var(--ease-out),
+                color var(--duration-fast) var(--ease-out);
+  }
+
+  .export:last-child {
+    border-bottom: 0;
+  }
+
+  .export:hover,
+  .export:focus-visible {
+    background: var(--surface-2);
+    color: var(--text-strong);
+    outline: none;
+  }
+
+  .export:hover .export-value,
+  .export:focus-visible .export-value {
+    color: var(--accent);
+  }
+
+  .export-key {
+    color: var(--built);
+  }
+
+  .export-key::after {
+    content: ":";
+    color: var(--border);
+  }
+
+  .export-arrow {
+    color: var(--border);
+  }
+
+  .export-value {
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .export-icon {
+    color: var(--muted);
+    opacity: 0;
+    transform: translate(-4px, 4px);
+    transition: opacity var(--duration-fast) var(--ease-out),
+                transform var(--duration-fast) var(--ease-out);
+  }
+
+  .export:hover .export-icon,
+  .export:focus-visible .export-icon {
+    opacity: 1;
+    transform: translate(0, 0);
+    color: var(--accent);
+  }
+
+  /* ─── Live terminal ──────────────────────────────── */
+
+  .terminal-live {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    font-family: var(--font-mono);
+  }
+
+  .terminal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-s) var(--space-m);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--step--1);
+  }
+
+  .terminal-head .terminal-tag {
+    color: var(--text);
+  }
+
+  .terminal-head .terminal-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6ch;
+    color: var(--built);
+  }
+
+  .terminal-head .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--built);
+    box-shadow: 0 0 8px var(--built-glow);
+    animation: t-pulse 1.6s var(--ease-in-out) infinite;
+  }
+
+  @keyframes t-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .terminal-body {
+    margin: 0;
+    padding: var(--space-m);
+    font-size: var(--step--1);
+    line-height: 1.7;
+    min-height: 230px;
+    max-height: 320px;
+    overflow-y: auto;
+    color: var(--muted);
+    white-space: pre-wrap;
+    word-break: break-word;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Faux blinking cursor at end of terminal */
+  .terminal-body::after {
+    content: "";
+    display: inline-block;
+    width: 0.6ch;
+    height: 1.1em;
+    background: var(--accent);
+    vertical-align: text-bottom;
+    margin-top: 4px;
+    animation: t-caret 900ms steps(2, end) infinite;
+    align-self: flex-start;
+  }
+
+  @keyframes t-caret {
+    50% { opacity: 0; }
+  }
+
+  .t-line {
+    display: block;
+  }
+
+  .t-cmd {
+    color: var(--text-strong);
+    margin-top: 0.2em;
+  }
+
+  .t-cmd:first-child {
+    margin-top: 0;
+  }
+
+  .t-prompt {
+    color: var(--accent);
+    margin-right: 0.2ch;
+  }
+
+  .t-out {
+    color: var(--muted);
+  }
+
+  @media (max-width: 640px) {
+    .stage {
+      padding: var(--space-2xl) var(--space-m);
+    }
+
+    .export {
+      grid-template-columns: auto 1fr auto;
+      grid-template-rows: auto auto;
+    }
+
+    .export-arrow {
+      display: none;
+    }
+
+    .export-key {
+      grid-column: 1 / -1;
+      font-size: var(--step--1);
+    }
+
+    .snippet {
+      font-size: var(--step--1);
+    }
+  }
+</style>

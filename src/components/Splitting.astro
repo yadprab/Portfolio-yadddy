@@ -1,0 +1,471 @@
+---
+const chunks = [
+  {
+    id: "design-systems",
+    hash: "a3f4b9",
+    label: "design-systems.chunk.js",
+    accent: "teal",
+    total: 47.2,
+    items: [
+      {
+        id: "component-library",
+        name: "component-library",
+        size: 24.8,
+        note: "internal primitives · headless · variant-driven",
+        status: "shipped",
+      },
+      {
+        id: "design-tokens",
+        name: "design-tokens",
+        size: 12.4,
+        note: "css variables · semantic naming · light/dark ready",
+        status: "shipped",
+      },
+      {
+        id: "smart-suggest-ui",
+        name: "smart-suggest-ui",
+        size: 10.0,
+        note: "redesign of recommendation surface",
+        status: "shipped",
+      },
+    ],
+  },
+  {
+    id: "devtools",
+    hash: "c812dd",
+    label: "devtools.chunk.js",
+    accent: "amber",
+    total: 38.9,
+    items: [
+      {
+        id: "growalfred",
+        name: "growalfred",
+        size: 18.3,
+        note: "cli · onboards engineers in one command",
+        status: "shipped",
+      },
+      {
+        id: "module-federation",
+        name: "module-federation",
+        size: 12.1,
+        note: "micro-frontends · runtime composition · R&D",
+        status: "exploration",
+      },
+      {
+        id: "bundle-reduction",
+        name: "bundle-reduction",
+        size: 8.5,
+        note: "the 91% win · case study lives here",
+        status: "shipped",
+      },
+    ],
+  },
+  {
+    id: "applications",
+    hash: "5f9a1c",
+    label: "applications.chunk.js",
+    accent: "muted",
+    total: 54.5,
+    items: [
+      {
+        id: "report-builder",
+        name: "report-builder",
+        size: 22.0,
+        note: "configurable reporting surface · drag-drop fields",
+        status: "shipped",
+      },
+      {
+        id: "inbox-labels",
+        name: "inbox-labels",
+        size: 18.5,
+        note: "second backend feature · full-stack ship",
+        status: "staging",
+      },
+      {
+        id: "growfin-app",
+        name: "growfin-app",
+        size: 14.0,
+        note: "the host product · senior frontend dev",
+        status: "shipped",
+      },
+    ],
+  },
+];
+
+const totalSize = chunks.reduce((s, c) => s + c.total, 0);
+const totalItems = chunks.reduce((s, c) => s + c.items.length, 0);
+---
+
+<section class="stage" id="stage-split" aria-label="code splitting">
+  <header class="stage-tag">
+    <span class="num">06</span>
+    <span class="name">code_splitting</span>
+  </header>
+
+  <p class="lede">
+    One bundle becomes many. Each chunk loads when its route asks for it —
+    so the home page never pays for the report builder.
+  </p>
+
+  <div class="treemap-wrap" data-treemap>
+    <div class="treemap">
+      {chunks.map((c) => (
+        <article
+          class="chunk"
+          data-accent={c.accent}
+          style={`--grow: ${c.total};`}
+        >
+          <header class="chunk-head">
+            <span class="chunk-name">{c.label}</span>
+            <span class="chunk-size">{c.total} kB</span>
+          </header>
+
+          <div class="tiles">
+            {c.items.map((item) => (
+              <button
+                type="button"
+                class="tile"
+                data-id={item.id}
+                style={`--grow: ${item.size};`}
+                aria-label={`${item.name}, ${item.size} kilobytes, ${item.note}`}
+              >
+                <span class="tile-name">{item.name}</span>
+                <span class="tile-size">{item.size} kB</span>
+                <span class={`tile-status status-${item.status}`}>
+                  {item.status}
+                </span>
+              </button>
+            ))}
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <div class="inspector" data-inspector role="status" aria-live="polite">
+      <span class="inspector-default" data-default>
+        <span class="inspector-icon" aria-hidden="true">◯</span>
+        hover a tile · inspect a chunk
+      </span>
+
+      {chunks.flatMap((c) =>
+        c.items.map((item) => (
+          <span class="inspector-row" data-for={item.id}>
+            <span class="inspector-icon" aria-hidden="true">◉</span>
+            <span class="inspector-name">{item.name}</span>
+            <span class="sep" aria-hidden="true">·</span>
+            <span class="inspector-size">{item.size} kB</span>
+            <span class="sep" aria-hidden="true">·</span>
+            <span class="inspector-note">{item.note}</span>
+            <span class="sep" aria-hidden="true">·</span>
+            <span class={`inspector-status status-${item.status}`}>
+              {item.status}
+            </span>
+          </span>
+        ))
+      )}
+    </div>
+  </div>
+
+  <footer class="footnote">
+    <span class="check">✓</span>
+    <span>split into {chunks.length} chunks · {totalItems} modules</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">{totalSize.toFixed(1)} kB total</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">all hash-named for long-term caching</span>
+  </footer>
+</section>
+
+<script>
+  const wraps = document.querySelectorAll<HTMLElement>("[data-treemap]");
+  wraps.forEach((wrap) => {
+    const inspector = wrap.querySelector<HTMLElement>("[data-inspector]");
+    if (!inspector) return;
+
+    wrap.querySelectorAll<HTMLElement>(".tile").forEach((tile) => {
+      const id = tile.dataset.id;
+      if (!id) return;
+      const focus = () => inspector.setAttribute("data-hovered", id);
+      const blur = () => inspector.removeAttribute("data-hovered");
+      tile.addEventListener("pointerenter", focus);
+      tile.addEventListener("pointerleave", blur);
+      tile.addEventListener("focus", focus);
+      tile.addEventListener("blur", blur);
+    });
+  });
+</script>
+
+<style>
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    padding: var(--space-3xl) var(--space-l);
+    max-width: var(--content-max);
+    margin: 0 auto;
+    border-top: 1px dashed var(--border);
+    display: grid;
+    gap: var(--space-xl);
+    align-content: start;
+  }
+
+  .stage-tag {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+  }
+
+  .stage-tag .num {
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .stage-tag .name {
+    color: var(--built);
+  }
+
+  .stage-tag .name::before {
+    content: "// ";
+    color: var(--border);
+  }
+
+  .lede {
+    color: var(--muted);
+    font-size: var(--step-0);
+    max-width: 60ch;
+  }
+
+  /* ─── Treemap ────────────────────────────────────── */
+
+  .treemap-wrap {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .treemap {
+    display: flex;
+    gap: var(--space-2xs);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    padding: var(--space-2xs);
+    min-height: 380px;
+  }
+
+  .chunk {
+    flex: var(--grow) 1 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border-radius: var(--radius-s);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    min-width: 0;
+  }
+
+  .chunk[data-accent="teal"] {
+    border-top: 2px solid var(--built);
+  }
+
+  .chunk[data-accent="amber"] {
+    border-top: 2px solid var(--accent);
+  }
+
+  .chunk[data-accent="muted"] {
+    border-top: 2px solid var(--muted);
+  }
+
+  .chunk-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--space-xs) var(--space-s);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+
+  .chunk-name {
+    color: var(--text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chunk[data-accent="teal"] .chunk-name { color: var(--built); }
+  .chunk[data-accent="amber"] .chunk-name { color: var(--accent); }
+  .chunk[data-accent="muted"] .chunk-name { color: var(--text); }
+
+  .chunk-size {
+    color: var(--muted);
+    flex-shrink: 0;
+    padding-left: var(--space-s);
+  }
+
+  .tiles {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 2px;
+    min-height: 0;
+  }
+
+  .tile {
+    flex: var(--grow) 1 0;
+    text-align: left;
+    background: var(--bg);
+    border: 1px solid transparent;
+    border-radius: var(--radius-s);
+    padding: var(--space-xs) var(--space-s);
+    font-family: var(--font-mono);
+    color: var(--text);
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    align-content: space-between;
+    gap: 4px;
+    min-height: 56px;
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out);
+  }
+
+  .tile:hover,
+  .tile:focus-visible {
+    background: var(--surface-2);
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  .tile-name {
+    font-size: var(--step-0);
+    color: var(--text-strong);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tile-size {
+    font-size: var(--step--1);
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .tile-status {
+    grid-column: 1 / -1;
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+    color: var(--muted);
+  }
+
+  .tile-status::before {
+    content: "● ";
+  }
+
+  .status-shipped { color: var(--built); }
+  .status-staging { color: var(--accent); }
+  .status-exploration { color: var(--muted); }
+
+  /* ─── Inspector ──────────────────────────────────── */
+
+  .inspector {
+    position: relative;
+    padding: var(--space-s) var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-s);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    min-height: 2.6em;
+    display: flex;
+    align-items: center;
+  }
+
+  .inspector-default,
+  .inspector-row {
+    display: none;
+    align-items: center;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  .inspector:not([data-hovered]) .inspector-default {
+    display: inline-flex;
+    color: var(--muted);
+  }
+
+  .inspector[data-hovered] .inspector-default { display: none; }
+
+  .inspector-row .inspector-icon { color: var(--accent); }
+  .inspector-default .inspector-icon { color: var(--muted); }
+
+  .inspector-name { color: var(--text-strong); }
+  .inspector-size { color: var(--accent); }
+  .inspector-note { color: var(--muted); }
+  .inspector .sep { color: var(--border); }
+
+  /* show only the matching row */
+  .inspector[data-hovered="component-library"] [data-for="component-library"],
+  .inspector[data-hovered="design-tokens"] [data-for="design-tokens"],
+  .inspector[data-hovered="smart-suggest-ui"] [data-for="smart-suggest-ui"],
+  .inspector[data-hovered="growalfred"] [data-for="growalfred"],
+  .inspector[data-hovered="module-federation"] [data-for="module-federation"],
+  .inspector[data-hovered="bundle-reduction"] [data-for="bundle-reduction"],
+  .inspector[data-hovered="report-builder"] [data-for="report-builder"],
+  .inspector[data-hovered="inbox-labels"] [data-for="inbox-labels"],
+  .inspector[data-hovered="growfin-app"] [data-for="growfin-app"] {
+    display: inline-flex;
+  }
+
+  /* ─── Footnote ───────────────────────────────────── */
+
+  .footnote {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: center;
+    padding-top: var(--space-l);
+    border-top: 1px dashed var(--border);
+  }
+
+  .footnote .check {
+    color: var(--built);
+  }
+
+  .footnote .sep {
+    color: var(--border);
+  }
+
+  .footnote .muted {
+    color: var(--muted);
+  }
+
+  @media (max-width: 760px) {
+    .stage {
+      padding: var(--space-2xl) var(--space-m);
+    }
+
+    .treemap {
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .chunk {
+      min-height: 200px;
+    }
+
+    .tile-status {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

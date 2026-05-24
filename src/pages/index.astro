@@ -1,0 +1,36 @@
+---
+import Layout from "~/layouts/Layout.astro";
+import Progress from "~/components/Progress.astro";
+import TopBar from "~/components/TopBar.astro";
+import EntryPoint from "~/components/EntryPoint.astro";
+import ResolveDeps from "~/components/ResolveDeps.astro";
+import Graph from "~/components/Graph.astro";
+import TreeShake from "~/components/TreeShake.astro";
+import Compression from "~/components/Compression.astro";
+import Splitting from "~/components/Splitting.astro";
+import Minify from "~/components/Minify.astro";
+import Output from "~/components/Output.astro";
+import Contact from "~/components/Contact.astro";
+---
+
+<Layout>
+  <Progress />
+  <TopBar />
+  <main>
+    <EntryPoint />
+    <ResolveDeps />
+    <Graph />
+    <TreeShake />
+    <Compression />
+    <Splitting />
+    <Minify />
+    <Output />
+    <Contact />
+  </main>
+</Layout>
+
+<style>
+  main {
+    position: relative;
+  }
+</style>

@@ -1,0 +1,336 @@
+---
+const sourceLines = [
+  { text: "function yaddy() {", type: "code" },
+  { text: "  /*! @preserve */", type: "preserve" },
+  { text: "  // கடைசி சிகரெட்", type: "preserve" },
+  { text: "", type: "blank" },
+  { text: "  const role     = \"frontend engineer\";", type: "code" },
+  { text: "  const years    = 4;", type: "code" },
+  { text: "  const employer = \"growfin · chennai\";", type: "code" },
+  { text: "", type: "blank" },
+  { text: "  const ships = [", type: "code" },
+  { text: "    \"bundle-reduction\",  // -91%", type: "code" },
+  { text: "    \"growalfred\",        // cli", type: "code" },
+  { text: "    \"smart-suggest\",     // ui redesign", type: "code" },
+  { text: "    \"report-builder\",    // configurable", type: "code" },
+  { text: "    \"inbox-labels\",      // first full-stack", type: "code" },
+  { text: "  ];", type: "code" },
+  { text: "", type: "blank" },
+  { text: "  const learning = [\"module-federation\", \"system-design\"];", type: "code" },
+  { text: "", type: "blank" },
+  { text: "  return Object.freeze({ role, years, employer, ships, learning });", type: "code" },
+  { text: "}", type: "code" },
+];
+---
+
+<section class="stage" id="stage-minify" aria-label="minification">
+  <header class="stage-tag">
+    <span class="num">07</span>
+    <span class="name">minification</span>
+  </header>
+
+  <p class="lede">
+    The build keeps what matters. Whitespace, dead comments, long names —
+    all collapse. Only lines marked <code>@preserve</code> survive the cull.
+  </p>
+
+  <div class="frames">
+    <div class="frame frame-source">
+      <header class="frame-head">
+        <span class="frame-tag">source</span>
+        <span class="frame-meta">yaddy.ts · 1.2 kB</span>
+      </header>
+      <pre class="code"><code>{sourceLines.map((l, i) => (
+  <span class={`line line-${l.type}`} style={`--i: ${i}`}>{l.text || " "}</span>
+))}</code></pre>
+    </div>
+
+    <div class="arrow-down" aria-hidden="true">
+      <span class="arrow-line"></span>
+      <span class="arrow-text">minifier · drop whitespace · rename locals · keep <code>@preserve</code></span>
+      <span class="arrow-line"></span>
+    </div>
+
+    <div class="frame frame-minified">
+      <header class="frame-head">
+        <span class="frame-tag">minified</span>
+        <span class="frame-meta">yaddy.min.ts · 348 b · −71%</span>
+      </header>
+      <pre class="code code-minified"><code>{`function yaddy(){`}<span class="kept">{`/*! கடைசி சிகரெட் */`}</span>{`return Object.freeze({r:"frontend engineer",y:4,e:"growfin",s:["bundle-reduction","growalfred","smart-suggest","report-builder","inbox-labels"],l:["module-federation","system-design"]})}`}</code></pre>
+      <p class="kept-note">
+        <span class="kept-arrow" aria-hidden="true">└──</span>
+        one line survived the minifier · marked <code>/*! ... */</code>
+      </p>
+    </div>
+  </div>
+
+  <footer class="footnote">
+    <span class="check">✓</span>
+    <span>minified</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">1.2 kB → 348 b · −71%</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">1 directive preserved</span>
+  </footer>
+</section>
+
+<style>
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    padding: var(--space-3xl) var(--space-l);
+    max-width: var(--content-max);
+    margin: 0 auto;
+    border-top: 1px dashed var(--border);
+    display: grid;
+    gap: var(--space-xl);
+    align-content: start;
+  }
+
+  .stage-tag {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+  }
+
+  .stage-tag .num { color: var(--accent); letter-spacing: 0.1em; }
+  .stage-tag .name { color: var(--built); }
+  .stage-tag .name::before { content: "// "; color: var(--border); }
+
+  .lede {
+    color: var(--muted);
+    font-size: var(--step-0);
+    max-width: 64ch;
+  }
+
+  .lede code {
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+  }
+
+  /* ─── Frames ─────────────────────────────────────── */
+
+  .frames {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .frame {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    font-family: var(--font-mono);
+  }
+
+  .frame-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--space-s) var(--space-m);
+    font-size: var(--step--1);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .frame-tag {
+    color: var(--built);
+  }
+
+  .frame-tag::before {
+    content: "▼ ";
+    color: var(--muted);
+  }
+
+  .frame-meta {
+    color: var(--muted);
+  }
+
+  .code {
+    margin: 0;
+    padding: var(--space-m);
+    font-size: var(--step-0);
+    line-height: 1.6;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .code code {
+    display: block;
+    font-family: inherit;
+  }
+
+  /* ─── Source frame lines ─────────────────────────── */
+
+  .line {
+    display: block;
+    transform-origin: top left;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .line-blank {
+    height: 1.6em;
+  }
+
+  .line-preserve {
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.06);
+    border-left: 2px solid var(--accent);
+    padding-left: var(--space-s);
+    margin-left: calc(-1 * var(--space-s) - 2px);
+  }
+
+  /* scroll-driven collapse for non-preserve lines */
+  @supports (animation-timeline: view()) {
+    .line-code,
+    .line-blank {
+      animation: line-collapse linear both;
+      animation-timeline: view();
+      animation-range: cover 20% cover 65%;
+    }
+
+    .line-code {
+      animation-delay: calc(var(--i) * 12ms);
+    }
+
+    .line-preserve {
+      animation: line-survive linear both;
+      animation-timeline: view();
+      animation-range: cover 25% cover 60%;
+    }
+  }
+
+  @keyframes line-collapse {
+    50% {
+      opacity: 0.25;
+      filter: blur(0.5px);
+    }
+    100% {
+      opacity: 0;
+      transform: scaleY(0);
+      height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  @keyframes line-survive {
+    to {
+      box-shadow:
+        0 0 0 1px rgb(232 163 61 / 0.18),
+        0 0 18px rgb(232 163 61 / 0.18);
+      color: var(--text-strong);
+    }
+  }
+
+  /* ─── Arrow ──────────────────────────────────────── */
+
+  .arrow-down {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    padding: var(--space-2xs) var(--space-s);
+  }
+
+  .arrow-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .arrow-text::before {
+    content: "↓ ";
+    color: var(--accent);
+  }
+
+  .arrow-text code {
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 1px 5px;
+    border-radius: var(--radius-s);
+  }
+
+  /* ─── Minified frame ─────────────────────────────── */
+
+  .frame-minified {
+    border-color: rgb(79 140 126 / 0.35);
+  }
+
+  .code-minified {
+    color: var(--muted);
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: var(--step--1);
+    line-height: 1.7;
+  }
+
+  .code-minified .kept {
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 1px 4px;
+    border-radius: var(--radius-s);
+  }
+
+  .kept-note {
+    margin: 0;
+    padding: var(--space-s) var(--space-m);
+    font-size: var(--step--1);
+    color: var(--muted);
+    border-top: 1px dashed var(--border);
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .kept-arrow {
+    color: var(--border);
+  }
+
+  .kept-note code {
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+  }
+
+  /* ─── Footnote ───────────────────────────────────── */
+
+  .footnote {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: center;
+    padding-top: var(--space-l);
+    border-top: 1px dashed var(--border);
+  }
+
+  .footnote .check { color: var(--built); }
+  .footnote .sep { color: var(--border); }
+  .footnote .muted { color: var(--muted); }
+
+  @media (max-width: 760px) {
+    .stage {
+      padding: var(--space-2xl) var(--space-m);
+    }
+
+    .code {
+      font-size: 0.85rem;
+      padding: var(--space-s);
+    }
+  }
+</style>

@@ -1,0 +1,413 @@
+---
+import BundleBox from "~/components/BundleBox.astro";
+---
+
+<section class="stage" id="stage-entry" aria-label="entry point">
+  <div class="stage-tag">
+    <span class="num">01</span>
+    <span class="name">entry_point</span>
+  </div>
+
+  <div class="terminal" role="presentation">
+    <div class="prompt-line">
+      <span class="prompt">$</span>
+      <span class="cmd">
+        <span class="cmd-text">yaddy build --target=production</span>
+        <span class="caret" aria-hidden="true"></span>
+      </span>
+    </div>
+
+    <div class="output">
+      <p class="line line-1">
+        <span class="check">✓</span> reading entry point
+      </p>
+      <p class="line line-2">
+        <span class="check">✓</span> initialising compiler
+      </p>
+    </div>
+  </div>
+
+  <BundleBox />
+
+  <div class="hero">
+    <h1 class="name-display">
+      <span class="word word-1">Yathavan</span>
+      <span class="word word-2">Gomathi</span>
+    </h1>
+    <p class="tagline">
+      Frontend engineer building applications, design systems, and developer tools.
+      The page you are scrolling is a build pipeline.
+    </p>
+  </div>
+
+  <a class="scroll-hint" href="#stage-resolve" data-play-build aria-label="play the build pipeline">
+    <span class="hint-arrow" aria-hidden="true">▶</span>
+    <span class="hint-label">play build</span>
+    <span class="hint-meta">8 stages · scroll to interrupt</span>
+  </a>
+</section>
+
+<script>
+  const trigger = document.querySelector<HTMLAnchorElement>("[data-play-build]");
+  if (trigger) {
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    const cancelEvents = [
+      "wheel",
+      "touchstart",
+      "keydown",
+      "mousedown",
+    ] as const;
+    const stageIds = [
+      "stage-resolve",
+      "stage-graph",
+      "stage-tree-shake",
+      "stage-compress",
+      "stage-split",
+      "stage-minify",
+      "stage-output",
+      "stage-contact",
+    ];
+
+    const GLIDE_MS = 900;
+    const DWELL_MS = 1300;
+    const OFFSET = 72;
+
+    let isPlaying = false;
+    let cancelled = false;
+
+    const ease = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    const glideTo = (targetY: number) =>
+      new Promise<void>((resolve) => {
+        const startY = window.scrollY;
+        const distance = targetY - startY;
+        if (Math.abs(distance) < 4) {
+          resolve();
+          return;
+        }
+        const startTime = performance.now();
+        const step = (now: number) => {
+          if (cancelled) {
+            resolve();
+            return;
+          }
+          const t = Math.min((now - startTime) / GLIDE_MS, 1);
+          window.scrollTo(0, startY + distance * ease(t));
+          if (t < 1) requestAnimationFrame(step);
+          else resolve();
+        };
+        requestAnimationFrame(step);
+      });
+
+    const dwell = (ms: number) =>
+      new Promise<void>((resolve) => {
+        const start = performance.now();
+        const tick = (now: number) => {
+          if (cancelled || now - start >= ms) {
+            resolve();
+            return;
+          }
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+
+    const cancel = () => {
+      cancelled = true;
+    };
+
+    const playBuild = async () => {
+      if (isPlaying) return;
+      isPlaying = true;
+      cancelled = false;
+      trigger.classList.add("playing");
+
+      cancelEvents.forEach((ev) =>
+        window.addEventListener(ev, cancel as EventListener, {
+          once: true,
+          passive: true,
+        })
+      );
+
+      for (let i = 0; i < stageIds.length; i++) {
+        if (cancelled) break;
+        const el = document.getElementById(stageIds[i]);
+        if (!el) continue;
+        const y =
+          el.getBoundingClientRect().top + window.scrollY - OFFSET;
+        await glideTo(y);
+        if (cancelled) break;
+        if (i < stageIds.length - 1) {
+          await dwell(DWELL_MS);
+        }
+      }
+
+      isPlaying = false;
+      trigger.classList.remove("playing");
+      cancelEvents.forEach((ev) =>
+        window.removeEventListener(ev, cancel as EventListener)
+      );
+    };
+
+    trigger.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (reduced) {
+        document
+          .getElementById("stage-contact")
+          ?.scrollIntoView({ behavior: "auto" });
+        return;
+      }
+      playBuild();
+    });
+  }
+</script>
+
+<style>
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: auto auto auto auto auto;
+    padding: var(--space-3xl) var(--space-l) var(--space-l);
+    max-width: var(--content-max);
+    margin: 0 auto;
+    gap: var(--space-xl);
+    align-content: space-between;
+  }
+
+  .stage-tag {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+    opacity: 0;
+    animation: fade-in 600ms var(--ease-out) 100ms forwards;
+  }
+
+  .stage-tag .num {
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .stage-tag .name {
+    color: var(--built);
+  }
+
+  .stage-tag .name::before {
+    content: "// ";
+    color: var(--border);
+  }
+
+  .terminal {
+    font-family: var(--font-mono);
+    font-size: var(--step-0);
+    line-height: 1.8;
+  }
+
+  .prompt-line {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .prompt {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .cmd {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    color: var(--text-strong);
+  }
+
+  .cmd-text {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 0;
+    animation: type 1400ms steps(32, end) 400ms forwards;
+  }
+
+  .caret {
+    display: inline-block;
+    width: 0.6ch;
+    height: 1.1em;
+    margin-left: 2px;
+    background: var(--accent);
+    vertical-align: text-bottom;
+    animation: blink 900ms steps(2, end) infinite;
+  }
+
+  .output {
+    margin-top: var(--space-s);
+    color: var(--muted);
+  }
+
+  .line {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  .line-1 {
+    animation: line-in 400ms var(--ease-out) 1900ms forwards;
+  }
+
+  .line-2 {
+    animation: line-in 400ms var(--ease-out) 2200ms forwards;
+  }
+
+  .check {
+    color: var(--built);
+    margin-right: 0.4ch;
+  }
+
+  .hero {
+    align-self: center;
+    display: grid;
+    gap: var(--space-l);
+    max-width: 64ch;
+  }
+
+  .name-display {
+    font-size: var(--step-6);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.3em;
+  }
+
+  .word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  .word-1 {
+    animation: word-in 700ms var(--ease-out) 2500ms forwards;
+  }
+
+  .word-2 {
+    color: var(--accent);
+    animation: word-in 700ms var(--ease-out) 2700ms forwards;
+  }
+
+  .tagline {
+    font-size: var(--step-1);
+    color: var(--muted);
+    line-height: 1.5;
+    max-width: 48ch;
+    opacity: 0;
+    animation: fade-in 700ms var(--ease-out) 3100ms forwards;
+  }
+
+  .scroll-hint {
+    justify-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-s);
+    padding: var(--space-xs) var(--space-m);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-l);
+    opacity: 0;
+    animation: fade-in 700ms var(--ease-out) 3500ms forwards;
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      background var(--duration-fast) var(--ease-out);
+    cursor: pointer;
+  }
+
+  .scroll-hint:hover,
+  .scroll-hint:focus-visible {
+    color: var(--text-strong);
+    border-color: var(--accent);
+    background: var(--surface-2);
+  }
+
+  .scroll-hint.playing {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .scroll-hint.playing .hint-arrow {
+    animation: none;
+    transform: scale(1.05);
+  }
+
+  .scroll-hint.playing .hint-meta::before {
+    content: "▮▮ ";
+  }
+
+  .scroll-hint.playing .hint-meta {
+    color: var(--accent);
+  }
+
+  .hint-arrow {
+    color: var(--accent);
+    font-size: 0.8em;
+    animation: pulse-arrow 1.8s var(--ease-in-out) infinite;
+  }
+
+  .hint-label {
+    color: var(--text);
+  }
+
+  .hint-meta {
+    color: var(--muted);
+    font-size: 0.85em;
+    padding-left: var(--space-xs);
+    border-left: 1px solid var(--border);
+  }
+
+  @keyframes pulse-arrow {
+    0%, 100% { opacity: 1; transform: translateX(0); }
+    50% { opacity: 0.5; transform: translateX(1px); }
+  }
+
+  @keyframes type {
+    to { width: 100%; }
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  @keyframes line-in {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes word-in {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    to { opacity: 1; }
+  }
+
+
+  @media (max-width: 640px) {
+    .stage {
+      padding: var(--space-2xl) var(--space-m) var(--space-m);
+      gap: var(--space-l);
+    }
+  }
+</style>

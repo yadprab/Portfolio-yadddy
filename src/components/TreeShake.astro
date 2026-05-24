@@ -1,0 +1,470 @@
+---
+const removed = [
+  "team-player",
+  "rockstar",
+  "ninja",
+  "passionate",
+  "guru",
+  "self-starter",
+  "wears-many-hats",
+  "pixel-perfectionist",
+];
+
+const kept = [
+  { word: "ships", note: "5+ features in prod" },
+  { word: "measurable", note: "91% bundle, p95 latency" },
+  { word: "specific", note: "cli, design system, federation" },
+];
+---
+
+<section class="stage" id="stage-tree-shake" aria-label="tree shaking">
+  <header class="stage-tag">
+    <span class="num">04</span>
+    <span class="name">tree_shaking</span>
+  </header>
+
+  <p class="lede">
+    Removing what isn't true. Most resume words add weight without payload.
+  </p>
+
+  <div class="ticker" aria-label="bundle size before and after">
+    <div class="ticker-head">
+      <span class="ticker-label">bundle.size</span>
+      <span class="ticker-meta">gzip · brotli enabled</span>
+    </div>
+
+    <div class="ticker-row">
+      <div class="ticker-stat">
+        <span class="ticker-stat-label">before</span>
+        <span class="ticker-stat-num"><span class="num-prev">450</span><span class="ticker-unit">kb</span></span>
+      </div>
+
+      <div class="ticker-stat ticker-stat-after">
+        <span class="ticker-stat-label">after</span>
+        <span class="ticker-stat-num"><span class="num-curr"><span class="num-static">39</span></span><span class="ticker-unit">kb</span></span>
+      </div>
+    </div>
+
+    <div class="ticker-bar" aria-hidden="true">
+      <div class="ticker-bar-track">
+        <div class="ticker-bar-fill"></div>
+      </div>
+    </div>
+
+    <div class="ticker-delta" aria-live="polite">
+      <span class="ticker-delta-num">−91%</span>
+      <span class="ticker-delta-label">vs prev · production build</span>
+    </div>
+  </div>
+
+  <div class="cols">
+    <section class="col col-removed">
+      <h3 class="col-head">
+        <span class="col-num">removed</span>
+        <span class="col-meta">8 modules · 411 kb</span>
+      </h3>
+      <ul class="rows">
+        {removed.map((w, i) => (
+          <li class="row row-removed" style={`--i: ${i}`}>
+            <span class="row-icon" aria-hidden="true">✗</span>
+            <span class="row-word">{w}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="col col-kept">
+      <h3 class="col-head">
+        <span class="col-num">kept</span>
+        <span class="col-meta">3 modules · 39 kb</span>
+      </h3>
+      <ul class="rows">
+        {kept.map((k, i) => (
+          <li class="row row-kept" style={`--i: ${i}`}>
+            <span class="row-icon" aria-hidden="true">✓</span>
+            <span class="row-word">{k.word}</span>
+            <span class="row-note">{k.note}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <footer class="footnote">
+    <span class="check">✓</span>
+    <span>tree-shaken</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">8 dropped · 3 kept</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">−91% size</span>
+  </footer>
+</section>
+
+<style>
+  @property --bundle-now {
+    syntax: "<integer>";
+    initial-value: 39;
+    inherits: false;
+  }
+
+  @property --bar-width {
+    syntax: "<percentage>";
+    initial-value: 8.67%;
+    inherits: false;
+  }
+
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    padding: var(--space-3xl) var(--space-l);
+    max-width: var(--content-max);
+    margin: 0 auto;
+    border-top: 1px dashed var(--border);
+    display: grid;
+    gap: var(--space-xl);
+    align-content: start;
+  }
+
+  .stage-tag {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+  }
+
+  .stage-tag .num {
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .stage-tag .name {
+    color: var(--built);
+  }
+
+  .stage-tag .name::before {
+    content: "// ";
+    color: var(--border);
+  }
+
+  .lede {
+    color: var(--muted);
+    font-size: var(--step-0);
+    max-width: 60ch;
+  }
+
+  /* ─── Ticker ─────────────────────────────────────── */
+
+  .ticker {
+    display: grid;
+    gap: var(--space-m);
+    padding: var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+  }
+
+  .ticker-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .ticker-head .ticker-label {
+    color: var(--built);
+  }
+
+  .ticker-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-l);
+    align-items: end;
+  }
+
+  .ticker-stat {
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  .ticker-stat-label {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .ticker-stat-num {
+    font-family: var(--font-mono);
+    font-size: var(--step-4);
+    line-height: 1;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3ch;
+  }
+
+  .ticker-stat-after .ticker-stat-num {
+    color: var(--text-strong);
+  }
+
+  .ticker-unit {
+    font-size: 0.5em;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: lowercase;
+  }
+
+  .num-curr {
+    display: inline-block;
+  }
+
+  @supports (animation-timeline: view()) {
+    .num-curr {
+      counter-reset: now var(--bundle-now);
+      animation: drop linear both;
+      animation-timeline: view();
+      animation-range: entry 25% cover 65%;
+    }
+    .num-curr .num-static {
+      display: none;
+    }
+    .num-curr::before {
+      content: counter(now);
+    }
+    @keyframes drop {
+      from { --bundle-now: 450; }
+      to { --bundle-now: 39; }
+    }
+  }
+
+  .ticker-bar {
+    padding: 2px 0;
+  }
+
+  .ticker-bar-track {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .ticker-bar-fill {
+    height: 100%;
+    width: 8.67%;
+    background: linear-gradient(to right, var(--accent), var(--accent-dim));
+    border-radius: 2px;
+  }
+
+  @supports (animation-timeline: view()) {
+    .ticker-bar-fill {
+      width: var(--bar-width);
+      animation: shrink linear both;
+      animation-timeline: view();
+      animation-range: entry 25% cover 65%;
+    }
+    @keyframes shrink {
+      from { --bar-width: 100%; }
+      to { --bar-width: 8.67%; }
+    }
+  }
+
+  .ticker-delta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s);
+    align-items: baseline;
+    padding-top: var(--space-s);
+    border-top: 1px dashed var(--border);
+  }
+
+  .ticker-delta-num {
+    font-family: var(--font-display);
+    font-size: var(--step-5);
+    line-height: 1;
+    color: var(--accent);
+    letter-spacing: -0.04em;
+    text-shadow: 0 0 24px rgb(232 163 61 / 0.25);
+  }
+
+  .ticker-delta-label {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  /* ─── Removed / Kept columns ─────────────────────── */
+
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl);
+    margin-top: var(--space-l);
+  }
+
+  .col {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .col-head {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    font-weight: 400;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .col-head .col-num {
+    color: var(--text);
+  }
+
+  .col-head .col-meta {
+    color: var(--muted);
+  }
+
+  .rows {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-3xs);
+    font-family: var(--font-mono);
+    font-size: var(--step-0);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.7ch;
+    align-items: baseline;
+  }
+
+  .row-icon {
+    font-size: 0.85em;
+  }
+
+  /* removed: strikethrough animates in */
+  .row-removed .row-icon {
+    color: var(--error);
+  }
+
+  .row-removed .row-word {
+    color: var(--muted);
+    position: relative;
+    display: inline-block;
+  }
+
+  .row-removed .row-word::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    height: 1.5px;
+    background: var(--error);
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: left center;
+    animation: strike 600ms var(--ease-out) forwards;
+    animation-delay: calc(var(--i) * 90ms + 200ms);
+  }
+
+  @supports (animation-timeline: view()) {
+    .row-removed .row-word::after {
+      animation: strike linear both;
+      animation-timeline: view();
+      animation-range: entry 20% entry 80%;
+      animation-delay: 0ms;
+    }
+
+    .row-removed {
+      animation: fade-out linear both;
+      animation-timeline: view();
+      animation-range: cover 60% cover 95%;
+    }
+  }
+
+  @keyframes strike {
+    to { transform: scaleX(1); }
+  }
+
+  @keyframes fade-out {
+    to { opacity: 0.35; }
+  }
+
+  /* kept */
+  .row-kept .row-icon {
+    color: var(--built);
+  }
+
+  .row-kept .row-word {
+    color: var(--text-strong);
+  }
+
+  .row-kept .row-note {
+    color: var(--muted);
+    font-size: var(--step--1);
+    padding-left: var(--space-s);
+    border-left: 1px solid var(--border);
+    margin-left: var(--space-xs);
+    grid-column: 2 / -1;
+  }
+
+  /* ─── Footnote ───────────────────────────────────── */
+
+  .footnote {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: center;
+    padding-top: var(--space-l);
+    border-top: 1px dashed var(--border);
+  }
+
+  .footnote .check {
+    color: var(--built);
+  }
+
+  .footnote .sep {
+    color: var(--border);
+  }
+
+  .footnote .muted {
+    color: var(--muted);
+  }
+
+  @media (max-width: 640px) {
+    .stage {
+      padding: var(--space-2xl) var(--space-m);
+    }
+
+    .ticker-row {
+      grid-template-columns: 1fr;
+      gap: var(--space-m);
+    }
+
+    .ticker-stat-num {
+      font-size: var(--step-3);
+    }
+
+    .ticker-delta-num {
+      font-size: var(--step-4);
+    }
+
+    .cols {
+      grid-template-columns: 1fr;
+      gap: var(--space-l);
+    }
+  }
+</style>

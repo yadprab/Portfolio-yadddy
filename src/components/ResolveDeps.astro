@@ -1,0 +1,292 @@
+---
+const skills = [
+  { name: "react", ext: "ts" },
+  { name: "typescript", ext: "ts" },
+  { name: "module-federation", ext: "ts" },
+  { name: "node", ext: "ts" },
+  { name: "system-design", ext: "ts" },
+  { name: "design-systems", ext: "ts" },
+];
+
+const projects = [
+  { name: "growalfred", ext: "ts", note: "cli · onboarding tool" },
+  { name: "bundle-reduction", ext: "ts", note: "91% bundle size win" },
+  { name: "smart-suggest", ext: "ts", note: "ui redesign" },
+  { name: "report-builder", ext: "ts", note: "product feature" },
+  { name: "inbox-labels", ext: "ts", note: "first full-stack ship" },
+  { name: "component-library", ext: "ts", note: "internal · primitives" },
+];
+
+const meta = [
+  { name: "growfin", ext: "ts", note: "sde2 · senior frontend dev" },
+  { name: "years-coding", ext: "ts", note: "04" },
+];
+
+const total = skills.length + projects.length + meta.length;
+---
+
+<section class="stage" id="stage-resolve" aria-label="resolve dependencies">
+  <header class="stage-tag">
+    <span class="num">02</span>
+    <span class="name">resolve_dependencies</span>
+  </header>
+
+  <p class="status">
+    <span class="dot" aria-hidden="true"></span>
+    <span>resolving {total} modules…</span>
+  </p>
+
+  <div class="tree" role="list">
+    <section class="group" style="--group-delay: 0">
+      <h3 class="group-name">./skills/</h3>
+      <ul class="files">
+        {skills.map((file, i) => (
+          <li class="file" style={`--i: ${i}`} role="listitem">
+            <span class="check" aria-hidden="true">✓</span>
+            <span class="fname">{file.name}</span>
+            <span class="fext">.{file.ext}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="group" style="--group-delay: 1">
+      <h3 class="group-name">./projects/</h3>
+      <ul class="files">
+        {projects.map((file, i) => (
+          <li class="file" style={`--i: ${i}`} role="listitem">
+            <span class="check" aria-hidden="true">✓</span>
+            <span class="fname">{file.name}</span>
+            <span class="fext">.{file.ext}</span>
+            <span class="fnote">{file.note}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="group" style="--group-delay: 2">
+      <h3 class="group-name">./meta/</h3>
+      <ul class="files">
+        {meta.map((file, i) => (
+          <li class="file" style={`--i: ${i}`} role="listitem">
+            <span class="check" aria-hidden="true">✓</span>
+            <span class="fname">{file.name}</span>
+            <span class="fext">.{file.ext}</span>
+            <span class="fnote">{file.note}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <footer class="summary">
+    <span class="check" aria-hidden="true">✓</span>
+    <span>resolved {total} modules</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">0 unresolved</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">0.18s</span>
+  </footer>
+</section>
+
+<style>
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    padding: var(--space-3xl) var(--space-l);
+    max-width: var(--content-max);
+    margin: 0 auto;
+    border-top: 1px dashed var(--border);
+  }
+
+  .stage-tag {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+    margin-bottom: var(--space-l);
+  }
+
+  .stage-tag .num {
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .stage-tag .name {
+    color: var(--built);
+  }
+
+  .stage-tag .name::before {
+    content: "// ";
+    color: var(--border);
+  }
+
+  .status {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-xl);
+  }
+
+  .status .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgb(232 163 61 / 0.6);
+    animation: pulse 1.6s var(--ease-in-out) infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .tree {
+    display: grid;
+    gap: var(--space-xl);
+    font-family: var(--font-mono);
+    font-size: var(--step-0);
+    line-height: 1.7;
+  }
+
+  .group {
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .group-name {
+    font-family: var(--font-mono);
+    font-size: var(--step-0);
+    font-weight: 400;
+    color: var(--text-strong);
+    letter-spacing: 0;
+    margin: 0 0 var(--space-2xs);
+  }
+
+  .files {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-3xs);
+    border-left: 1px solid var(--border);
+    padding-left: var(--space-m);
+  }
+
+  .file {
+    display: grid;
+    grid-template-columns: auto auto auto 1fr;
+    align-items: baseline;
+    gap: 0.55ch;
+    opacity: 0;
+    transform: translateX(-8px);
+    animation: file-in 600ms var(--ease-out) forwards;
+    animation-delay: calc(var(--i) * 80ms + var(--group-delay) * 200ms + 200ms);
+  }
+
+  @supports (animation-timeline: view()) {
+    .file {
+      animation: file-scroll linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+      animation-delay: 0ms;
+    }
+  }
+
+  .file:hover,
+  .file:focus-within {
+    color: var(--text-strong);
+  }
+
+  .check {
+    color: var(--built);
+    font-size: 0.85em;
+  }
+
+  .fname {
+    color: var(--text);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .file:hover .fname {
+    color: var(--accent);
+  }
+
+  .fext {
+    color: var(--built);
+    opacity: 0.85;
+  }
+
+  .fnote {
+    color: var(--muted);
+    font-size: var(--step--1);
+    padding-left: var(--space-s);
+    border-left: 1px solid var(--border);
+    margin-left: var(--space-xs);
+    justify-self: start;
+  }
+
+  .summary {
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-l);
+    border-top: 1px dashed var(--border);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: center;
+  }
+
+  .summary .check {
+    color: var(--built);
+  }
+
+  .summary .sep {
+    color: var(--border);
+  }
+
+  .summary .muted {
+    color: var(--muted);
+  }
+
+  @keyframes file-in {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes file-scroll {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .stage {
+      padding: var(--space-2xl) var(--space-m);
+    }
+
+    .file {
+      grid-template-columns: auto auto auto;
+      grid-template-rows: auto auto;
+    }
+
+    .fnote {
+      grid-column: 2 / -1;
+      padding-left: 0;
+      margin-left: 0;
+      border-left: 0;
+      color: var(--muted);
+    }
+  }
+</style>

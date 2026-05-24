@@ -1,0 +1,61 @@
+:root {
+  --bg: #0a0e0f;
+  --surface: #131b1d;
+  --surface-2: #1a2426;
+  --border: #1e2a2d;
+  --muted: #5c6669;
+  --text: #e8e1cf;
+  --text-strong: #f5efd9;
+  --accent: #e8a33d;
+  --accent-dim: #b88330;
+  --built: #4f8c7e;
+  --built-glow: rgb(79 140 126 / 0.55);
+  --error: #b84a3e;
+
+  --font-display: "Circe Bold", "Circe", system-ui, sans-serif;
+  --font-body: "Circe Light", "Circe", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  --step--1: clamp(0.83rem, 0.78rem + 0.22vw, 0.94rem);
+  --step-0: clamp(1rem, 0.91rem + 0.43vw, 1.13rem);
+  --step-1: clamp(1.2rem, 1.07rem + 0.65vw, 1.5rem);
+  --step-2: clamp(1.44rem, 1.25rem + 0.94vw, 2rem);
+  --step-3: clamp(1.73rem, 1.46rem + 1.36vw, 2.66rem);
+  --step-4: clamp(2.07rem, 1.69rem + 1.91vw, 3.55rem);
+  --step-5: clamp(2.49rem, 1.96rem + 2.66vw, 4.73rem);
+  --step-6: clamp(2.99rem, 2.25rem + 3.67vw, 6.31rem);
+
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-s: 1rem;
+  --space-m: 1.5rem;
+  --space-l: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 5rem;
+  --space-3xl: 8rem;
+
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --radius-l: 14px;
+
+  --duration-fast: 140ms;
+  --duration-base: 280ms;
+  --duration-slow: 560ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --content-max: 72rem;
+  --reading-max: 38rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
