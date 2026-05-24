@@ -461,7 +461,18 @@ const totalItems = chunks.reduce((s, c) => s + c.items.length, 0);
     }
 
     .chunk {
-      min-height: 200px;
+      min-height: auto;
+      overflow: visible;
+    }
+
+    .tiles {
+      flex: 0 0 auto;
+    }
+
+    .tile {
+      flex: 0 0 auto;
+      min-height: auto;
+      padding: var(--space-s);
     }
 
     .tile-status {
