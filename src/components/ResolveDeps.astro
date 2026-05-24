@@ -87,6 +87,12 @@ const total = skills.length + projects.length + meta.length;
     <span class="sep" aria-hidden="true">·</span>
     <span class="muted">0.18s</span>
   </footer>
+
+  <a class="deps-lab-link" href="/lab/deps">
+    <span class="deps-lab-arrow" aria-hidden="true">→</span>
+    <span class="deps-lab-label">how dependency resolution actually works</span>
+    <span class="deps-lab-meta">lab · interactive · 3 widgets</span>
+  </a>
 </section>
 
 <style>
@@ -255,6 +261,64 @@ const total = skills.length + projects.length + meta.length;
 
   .summary .muted {
     color: var(--muted);
+  }
+
+  .deps-lab-link {
+    margin-top: var(--space-m);
+    padding: var(--space-s) var(--space-m);
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-s);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    text-decoration: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-l);
+    align-self: start;
+    justify-self: start;
+    width: max-content;
+    max-width: 100%;
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      background var(--duration-fast) var(--ease-out);
+  }
+
+  .deps-lab-link:hover,
+  .deps-lab-link:focus-visible {
+    color: var(--text-strong);
+    border-color: var(--accent);
+    background: var(--surface-2);
+    outline: none;
+  }
+
+  .deps-lab-arrow {
+    color: var(--accent);
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+
+  .deps-lab-link:hover .deps-lab-arrow,
+  .deps-lab-link:focus-visible .deps-lab-arrow {
+    transform: translateX(3px);
+  }
+
+  .deps-lab-meta {
+    color: var(--muted);
+    padding-left: var(--space-s);
+    border-left: 1px solid var(--border);
+  }
+
+  @media (max-width: 540px) {
+    .deps-lab-link {
+      flex-wrap: wrap;
+    }
+    .deps-lab-meta {
+      flex-basis: 100%;
+      padding-left: 0;
+      border-left: 0;
+    }
   }
 
   @keyframes file-in {

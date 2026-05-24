@@ -6,6 +6,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-m);
   overflow: hidden;
+  touch-action: none;
 }
 
 .canvas {
@@ -79,7 +80,7 @@
 
 .label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   fill: var(--text);
   text-anchor: middle;
   pointer-events: none;
@@ -146,12 +147,30 @@
 
 @media (max-width: 640px) {
   .wrap {
-    aspect-ratio: 1 / 1;
+    /* taller portrait ratio so 14 nodes have vertical room */
+    aspect-ratio: 4 / 5;
   }
+
+  .label {
+    font-size: 14px;
+  }
+
+  /* legend sits alone at the bottom on mobile — hint hidden */
+  .legend {
+    font-size: 11px;
+    gap: var(--space-s);
+    bottom: var(--space-xs);
+    left: var(--space-s);
+  }
+
   .hint {
     display: none;
   }
-  .label {
-    font-size: 9.5px;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  /* on touch devices regardless of viewport — drop the hover hint */
+  .hint {
+    display: none;
   }
 }

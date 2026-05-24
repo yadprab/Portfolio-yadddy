@@ -68,9 +68,9 @@ const EDGES: Edge[] = [
 const W = 800;
 const H = 500;
 const RADIUS: Record<NodeType, number> = {
-  skill: 12,
-  project: 18,
-  meta: 14,
+  skill: 14,
+  project: 22,
+  meta: 16,
 };
 
 function initNodes(): SimNode[] {
@@ -154,8 +154,9 @@ function step(nodes: SimNode[], edges: Edge[]) {
     if (n.fx !== undefined) continue;
     n.x += n.vx;
     n.y += n.vy;
-    n.x = Math.max(n.r + 8, Math.min(W - n.r - 8, n.x));
-    n.y = Math.max(n.r + 8, Math.min(H - n.r - 8, n.y));
+    n.x = Math.max(n.r + 12, Math.min(W - n.r - 12, n.x));
+    // leave room below for the label (about r + 18 of vertical space)
+    n.y = Math.max(n.r + 12, Math.min(H - n.r - 26, n.y));
   }
 }
 
@@ -297,7 +298,7 @@ export default function DependencyGraph() {
                 onPointerDown={onPointerDown(n.id)}
               >
                 <circle className={styles.nodeCircle} r={n.r} />
-                <text className={styles.label} y={n.r + 14}>
+                <text className={styles.label} y={n.r + 16}>
                   {n.id}
                   <tspan className={styles.labelExt}>.ts</tspan>
                 </text>

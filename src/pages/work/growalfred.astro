@@ -1,0 +1,969 @@
+---
+import Layout from "~/layouts/Layout.astro";
+import TopBar from "~/components/TopBar.astro";
+
+const stats = [
+  { label: "current version", value: "1.0.1" },
+  { label: "source files", value: "17", note: "single package" },
+  { label: "tracked steps", value: "8", note: "resumable" },
+  { label: "onboarding time", value: "~30", unit: "min", note: "down from 2–3 days" },
+];
+
+const beforeAfter = {
+  before: [
+    "Clone 10+ private repos manually",
+    "Configure GitHub Packages auth · find npm token guide",
+    "Install Docker · realize it isn't running · open it",
+    "Run MySQL container · port 3306 conflicts · debug",
+    "Run ElasticSearch container · check it actually started",
+    "Maven build · 20 min · resolve missing dependencies",
+    "Nginx config · paste from confluence · hope hosts file is right",
+    "Create local account · curl fails · figure out which service is down",
+  ],
+  after: [
+    "Run `npx @sinecycle/growalfred@latest`",
+    "Pick a workspace name. Alfred handles the rest.",
+    "Interrupt at any point. Re-run. Resumes from the last completed step.",
+  ],
+};
+
+const stateSteps = [
+  "repos_cloned",
+  "frontend_auth_configured",
+  "backend_dependencies_installed",
+  "mysql_setup_complete",
+  "elasticsearch_setup_complete",
+  "maven_build_complete",
+  "nginx_configured",
+  "local_account_created",
+];
+
+const diagnostics = [
+  {
+    title: "Port conflict detection",
+    body: "Alfred runs <code>lsof -i :3306</code> when MySQL fails to bind. Distinguishes Docker containers from system services. Offers to stop the offending container automatically; for system processes, prints the exact <code>brew services stop</code> or <code>kill</code> command.",
+  },
+  {
+    title: "Docker auto-start",
+    body: "If <code>docker info</code> fails, Alfred launches Docker Desktop with <code>open -a Docker</code>, then polls every 2 seconds for up to 60 tries. The engineer never has to ask why containers are failing — Alfred already knows and is fixing it.",
+  },
+  {
+    title: "Service health on failure",
+    body: "When local account creation fails, Alfred runs <code>lsof -i :8080 -sTCP:LISTEN</code> and <code>:80</code>, reports exactly which service isn't running, and prints the specific command to start it. The error message IS the fix.",
+  },
+  {
+    title: "Workspace detection",
+    body: "Scans <code>~/Desktop/</code> for <code>.alfred-state.json</code> files on launch. Sorts most-recent first, shows completion percentage, lets you resume an existing workspace or start fresh. No CLI flags, no path arguments.",
+  },
+];
+
+const themeNotes = [
+  { line: "\"Good evening, Master Wayne. Ready to begin your work?\"", role: "first run · welcome" },
+  { line: "\"I found your previous workspace, sir.\"", role: "auto-resume detected" },
+  { line: "\"The Batmobile needs a jumpstart.\"", role: "docker desktop launching" },
+  { line: "\"It appears something else has claimed this port, sir.\"", role: "port conflict" },
+  { line: "\"Not everyone can be Batman, Master Wayne.\"", role: "access denied · org check failed" },
+  { line: "\"Why do we fall, sir? So we can learn to pick ourselves up.\"", role: "session close" },
+];
+---
+
+<Layout title="GrowAlfred · case study · Yathavan Gomathi">
+  <TopBar />
+
+  <main class="case">
+    <nav class="case-nav" aria-label="case study navigation">
+      <a class="case-back" href="/">
+        <span aria-hidden="true">←</span> back to bundle
+      </a>
+      <span class="case-crumb">
+        <span class="crumb-num">case-study</span>
+        <span class="crumb-name">growalfred</span>
+      </span>
+    </nav>
+
+    <header class="hero">
+      <p class="hero-eyebrow">
+        <span class="eyebrow-tag">closed-source</span>
+        <span class="eyebrow-sep" aria-hidden="true">·</span>
+        <span class="eyebrow-meta">built at growfin · cli · solo</span>
+      </p>
+      <h1 class="hero-title">GrowAlfred</h1>
+      <p class="hero-tagline">
+        A CLI that takes a new engineer from a clean laptop to a running local
+        environment in one command. State-tracked, auto-resumable, with diagnostics
+        sharp enough to tell you which port is jammed and how to free it.
+      </p>
+    </header>
+
+    <section class="stats" aria-label="at a glance">
+      {stats.map((s) => (
+        <div class="stat">
+          <span class="stat-value">
+            {s.value}
+            {s.unit && <span class="stat-unit">{s.unit}</span>}
+          </span>
+          <span class="stat-label">{s.label}</span>
+          {s.note && <span class="stat-note">{s.note}</span>}
+        </div>
+      ))}
+    </section>
+
+    <section class="block" aria-labelledby="problem-h">
+      <header class="block-head">
+        <span class="block-num">01</span>
+        <h2 class="block-title" id="problem-h">The pain</h2>
+      </header>
+      <p class="block-lede">
+        Onboarding a new Growfin engineer to local dev took two to three days.
+        Eight separate setup phases — each with its own failure modes, each
+        documented across three Confluence pages and a Slack thread from 2023.
+        Most steps depended on services from earlier steps being up. One missing
+        port binding meant restarting from scratch.
+      </p>
+
+      <div class="compare">
+        <div class="compare-col compare-before">
+          <h3 class="compare-label">before</h3>
+          <ol class="compare-list">
+            {beforeAfter.before.map((step) => (
+              <li>{step}</li>
+            ))}
+          </ol>
+          <p class="compare-meta">2–3 days · high abandonment · senior engineer on standby</p>
+        </div>
+        <div class="compare-col compare-after">
+          <h3 class="compare-label">after</h3>
+          <ol class="compare-list">
+            {beforeAfter.after.map((step) => (
+              <li>{step}</li>
+            ))}
+          </ol>
+          <p class="compare-meta">~30 minutes · interruptible · self-serve</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="state-h">
+      <header class="block-head">
+        <span class="block-num">02</span>
+        <h2 class="block-title" id="state-h">The state engine</h2>
+      </header>
+      <p class="block-lede">
+        The CLI's hardest job isn't installing software — it's <em>remembering what's already done</em>.
+        Alfred writes a JSON state file per workspace and treats setup as an idempotent
+        finite state machine. Each step has one of three states: not-started, in-progress, completed.
+        Restarting the CLI skips completed steps without asking.
+      </p>
+
+      <pre class="snippet"><code>{`// ~/Desktop/growfin-batcave/.alfred-state.json
+{
+  "version": "1.0.0",
+  "workspace": "/Users/you/Desktop/growfin-batcave",
+  "steps": {
+    "repos_cloned":              { "completed": true, "count": 10,
+                                   "completedAt": "2026-01-28T05:27:06Z" },
+    "frontend_auth_configured":  { "completed": true,
+                                   "completedAt": "2026-01-28T05:27:06Z" },
+    "backend_dependencies_installed": { "completed": false },
+    ...
+  },
+  "lastUpdated": "2026-01-28T05:27:06Z"
+}`}</code></pre>
+
+      <div class="steps-list">
+        <h3 class="steps-head">eight tracked steps</h3>
+        <ol class="steps-grid">
+          {stateSteps.map((s, i) => (
+            <li class="step">
+              <span class="step-num">{String(i + 1).padStart(2, "0")}</span>
+              <code class="step-name">{s}</code>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <p class="block-lede">
+        On launch, Alfred scans <code>~/Desktop/</code> for any folder containing a
+        <code>.alfred-state.json</code>, sorts by <code>lastUpdated</code>, and offers
+        to resume the most recent one — or start a fresh workspace. The engineer
+        never specifies a path; the state finds itself.
+      </p>
+    </section>
+
+    <section class="block block-flagship" aria-labelledby="diag-h">
+      <header class="block-head">
+        <span class="block-num">03</span>
+        <h2 class="block-title" id="diag-h">Intelligent diagnostics</h2>
+      </header>
+      <p class="block-lede">
+        The difference between "MySQL failed to start" and "port 3306 is held by
+        a stray Docker container called <code>mysql_old</code> — shall I stop it for you?"
+        is the difference between a CLI you tolerate and a CLI you trust. Alfred
+        leans hard into the second.
+      </p>
+
+      <div class="diag-grid">
+        {diagnostics.map((d) => (
+          <article class="diag">
+            <h3 class="diag-title">{d.title}</h3>
+            <p class="diag-body" set:html={d.body}></p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="ux-h">
+      <header class="block-head">
+        <span class="block-num">04</span>
+        <h2 class="block-title" id="ux-h">The UX choice</h2>
+      </header>
+      <p class="block-lede">
+        A CLI that someone has to use for hours during their first week deserves
+        personality. Alfred is themed end-to-end as the Wayne Manor butler — every
+        error message, every spinner caption, every access-denied screen carries
+        the voice. It's not decoration; it's how a stressed-out new hire stops
+        feeling stuck and starts feeling guided.
+      </p>
+
+      <div class="theme-grid">
+        {themeNotes.map((t) => (
+          <div class="theme-card">
+            <p class="theme-line">{t.line}</p>
+            <p class="theme-role">— {t.role}</p>
+          </div>
+        ))}
+      </div>
+
+      <p class="block-lede">
+        Visually: Clack prompts (Vite-style box drawing), cross-platform Unicode
+        symbols via <code>figures</code>, gradient banners via <code>gradient-string</code>,
+        and rotating spinner messages that update every two seconds so the engineer
+        never wonders if the process froze. Output discipline matters in a CLI as
+        much as in any UI.
+      </p>
+    </section>
+
+    <section class="block" aria-labelledby="run-h">
+      <header class="block-head">
+        <span class="block-num">05</span>
+        <h2 class="block-title" id="run-h">Run it</h2>
+      </header>
+      <p class="block-lede">
+        Alfred ships as a private package on <code>npm.pkg.github.com</code> under the
+        <code>@sinecycle</code> scope — same registry the rest of the platform publishes
+        to. Installation requires GitHub authentication with <code>read:packages</code>
+        scope. The flow is documented end-to-end so a new engineer hits "401" exactly
+        once before they know the fix.
+      </p>
+
+      <div class="cmd-blocks">
+        <article class="cmd">
+          <header class="cmd-head">
+            <span class="cmd-label">install · one-time</span>
+            <span class="cmd-meta">~2 minutes</span>
+          </header>
+          <pre class="cmd-snippet"><code>{`# 1. github cli (if missing)
+brew install gh
+
+# 2. auth with the read:packages scope
+gh auth login -s read:packages
+
+# 3. point npm at the github registry for @sinecycle
+npm config set @sinecycle:registry https://npm.pkg.github.com
+npm config set //npm.pkg.github.com/:_authToken $(gh auth token)`}</code></pre>
+        </article>
+
+        <article class="cmd">
+          <header class="cmd-head">
+            <span class="cmd-label">run</span>
+            <span class="cmd-meta">no install · npx fetches latest</span>
+          </header>
+          <pre class="cmd-snippet"><code>{`# onboarding wizard
+npx @sinecycle/growalfred@latest
+
+# help · commands per repo · setup reference
+npx @sinecycle/growalfred@latest help`}</code></pre>
+        </article>
+
+        <article class="cmd cmd-troubleshoot">
+          <header class="cmd-head">
+            <span class="cmd-label">troubleshoot · 401 Unauthorized</span>
+            <span class="cmd-meta">most common new-hire snag</span>
+          </header>
+          <pre class="cmd-snippet"><code>{`# verify read:packages is in scopes
+gh auth status
+
+# refresh if missing
+gh auth refresh -s read:packages
+
+# repoint npm at a fresh token
+npm config set //npm.pkg.github.com/:_authToken $(gh auth token)`}</code></pre>
+        </article>
+      </div>
+
+      <p class="block-lede">
+        Auth is OAuth via the GitHub CLI — no plaintext tokens checked in, no
+        copy-paste of long strings, scoped to <code>read:packages</code> so the token
+        can't do anything else. Tokens live in the system keychain on macOS.
+      </p>
+    </section>
+
+    <section class="block" aria-labelledby="tech-h">
+      <header class="block-head">
+        <span class="block-num">06</span>
+        <h2 class="block-title" id="tech-h">Tech</h2>
+      </header>
+
+      <ul class="tech-grid">
+        <li class="tech">
+          <span class="tech-cat">runtime</span>
+          <span class="tech-items">Node.js 20 · ESM</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">prompts</span>
+          <span class="tech-items"><code>@clack/prompts</code> — Vite-style interactive UI</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">command parsing</span>
+          <span class="tech-items"><code>commander</code> — sub-commands &amp; flags</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">terminal output</span>
+          <span class="tech-items"><code>chalk</code> · <code>gradient-string</code> · <code>figures</code> · <code>ora</code></span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">state</span>
+          <span class="tech-items">JSON file per workspace · idempotent state machine</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">system probes</span>
+          <span class="tech-items"><code>lsof</code> · <code>docker info</code> · <code>open -a Docker</code></span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">distribution</span>
+          <span class="tech-items">GitHub Packages · <code>@sinecycle</code> scope · <code>npx</code> install</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">tooling</span>
+          <span class="tech-items">Biome · pnpm 10 · semantic versioning</span>
+        </li>
+      </ul>
+    </section>
+
+    <footer class="case-footer">
+      <a class="case-back case-back-foot" href="/">
+        <span aria-hidden="true">←</span> back to bundle
+      </a>
+      <p class="case-foot-meta">
+        case study compiled <time datetime={new Date().toISOString().slice(0, 10)}>{new Date().toISOString().slice(0, 10)}</time>
+        <span aria-hidden="true"> · </span>
+        source closed · case-study by <a href="/" class="case-foot-link">Yathavan Gomathi</a>
+      </p>
+    </footer>
+  </main>
+</Layout>
+
+<style>
+  .case {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: var(--space-3xl) var(--space-l) var(--space-2xl);
+    display: grid;
+    gap: var(--space-3xl);
+  }
+
+  /* ─── Nav ─────────────────────────────────────── */
+
+  .case-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    padding-bottom: var(--space-m);
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .case-back {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .case-back:hover,
+  .case-back:focus-visible {
+    color: var(--text-strong);
+  }
+
+  .case-crumb {
+    display: inline-flex;
+    gap: 0.6ch;
+    align-items: baseline;
+  }
+
+  .crumb-num { color: var(--accent); letter-spacing: 0.05em; }
+  .crumb-name { color: var(--built); }
+  .crumb-name::before { content: "// "; color: var(--border); }
+
+  /* ─── Hero ────────────────────────────────────── */
+
+  .hero {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .hero-eyebrow {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.6ch;
+    align-items: baseline;
+  }
+
+  .eyebrow-tag {
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 2px 8px;
+    border-radius: var(--radius-s);
+    letter-spacing: 0.06em;
+    text-transform: lowercase;
+  }
+
+  .eyebrow-sep { color: var(--border); }
+
+  .hero-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-6);
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    color: var(--text-strong);
+  }
+
+  .hero-tagline {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--step-1);
+    line-height: 1.5;
+    max-width: 60ch;
+  }
+
+  /* ─── Stats ───────────────────────────────────── */
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+  }
+
+  .stat {
+    padding: var(--space-l);
+    border-right: 1px solid var(--border);
+    display: grid;
+    gap: var(--space-2xs);
+    font-family: var(--font-mono);
+  }
+
+  .stat:last-child { border-right: 0; }
+
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    line-height: 1;
+    color: var(--text-strong);
+    letter-spacing: -0.02em;
+    display: inline-flex;
+    gap: 0.3ch;
+    align-items: baseline;
+  }
+
+  .stat-unit {
+    font-size: 0.45em;
+    color: var(--muted);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  .stat-label {
+    font-size: var(--step--1);
+    color: var(--muted);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  .stat-note {
+    font-size: var(--step--1);
+    color: var(--built);
+  }
+
+  /* ─── Block ────────────────────────────────────── */
+
+  .block {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+    padding-bottom: var(--space-s);
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .block-num {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .block-title {
+    margin: 0;
+    font-size: var(--step-3);
+    letter-spacing: -0.02em;
+    color: var(--text-strong);
+  }
+
+  .block-lede {
+    color: var(--text);
+    font-size: var(--step-0);
+    line-height: 1.6;
+    max-width: 72ch;
+    margin: 0;
+  }
+
+  .block-lede code,
+  .diag-body code,
+  .tech-items code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+  }
+
+  .block-lede em {
+    color: var(--text-strong);
+    font-style: normal;
+    border-bottom: 1px dashed rgb(232 163 61 / 0.5);
+    padding-bottom: 1px;
+  }
+
+  /* ─── Before / After ──────────────────────────── */
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+  }
+
+  .compare-col {
+    padding: var(--space-l);
+    border-right: 1px solid var(--border);
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .compare-col:last-child { border-right: 0; }
+
+  .compare-label {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    text-transform: lowercase;
+    letter-spacing: 0.06em;
+  }
+
+  .compare-before .compare-label { color: var(--error); }
+  .compare-after .compare-label { color: var(--built); }
+
+  .compare-list {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  .compare-list li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 2.4em;
+    color: var(--text);
+    line-height: 1.45;
+  }
+
+  .compare-list li::before {
+    content: counter(step, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+  }
+
+  .compare-before .compare-list li { color: var(--muted); }
+
+  .compare-meta {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    padding-top: var(--space-xs);
+    border-top: 1px dashed var(--border);
+  }
+
+  /* ─── Snippet ─────────────────────────────────── */
+
+  .snippet {
+    margin: 0;
+    padding: var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    line-height: 1.7;
+    color: var(--text);
+    overflow-x: auto;
+  }
+
+  /* ─── Command blocks ──────────────────────────── */
+
+  .cmd-blocks {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .cmd {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    font-family: var(--font-mono);
+  }
+
+  .cmd-troubleshoot {
+    border-color: rgb(232 163 61 / 0.3);
+  }
+
+  .cmd-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--space-s) var(--space-m);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--step--1);
+  }
+
+  .cmd-label {
+    color: var(--built);
+  }
+
+  .cmd-label::before {
+    content: "▼ ";
+    color: var(--muted);
+  }
+
+  .cmd-troubleshoot .cmd-label {
+    color: var(--accent);
+  }
+
+  .cmd-meta {
+    color: var(--muted);
+  }
+
+  .cmd-snippet {
+    margin: 0;
+    padding: var(--space-m);
+    font-size: var(--step--1);
+    line-height: 1.75;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .cmd-snippet code {
+    font-family: inherit;
+  }
+
+  /* ─── Steps list ──────────────────────────────── */
+
+  .steps-list {
+    padding: var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .steps-head {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--built);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  .steps-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2xs) var(--space-m);
+  }
+
+  .step {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+    font-family: var(--font-mono);
+  }
+
+  .step-num {
+    color: var(--accent);
+    font-size: var(--step--1);
+  }
+
+  .step-name {
+    color: var(--text);
+    background: none;
+    padding: 0;
+    font-size: var(--step-0);
+  }
+
+  /* ─── Diagnostics flagship ────────────────────── */
+
+  .block-flagship .block-head {
+    border-bottom-color: rgb(232 163 61 / 0.3);
+  }
+
+  .diag-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-m);
+  }
+
+  .diag {
+    padding: var(--space-m) var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .diag-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+
+  .diag-body {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.55;
+  }
+
+  /* ─── Theme grid ──────────────────────────────── */
+
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-s);
+  }
+
+  .theme-card {
+    padding: var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+    border-radius: var(--radius-s);
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  .theme-line {
+    margin: 0;
+    color: var(--text-strong);
+    font-style: italic;
+    line-height: 1.45;
+  }
+
+  .theme-role {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  /* ─── Tech ────────────────────────────────────── */
+
+  .tech-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-s);
+  }
+
+  .tech {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: var(--space-s);
+    padding: var(--space-s) var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-s);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  .tech-cat {
+    color: var(--built);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  .tech-items { color: var(--text); }
+
+  /* ─── Footer ──────────────────────────────────── */
+
+  .case-footer {
+    padding-top: var(--space-l);
+    border-top: 1px dashed var(--border);
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .case-back-foot {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  .case-foot-meta {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .case-foot-link {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .case-foot-link:hover,
+  .case-foot-link:focus-visible {
+    color: var(--text-strong);
+  }
+
+  /* ─── Mobile ──────────────────────────────────── */
+
+  @media (max-width: 760px) {
+    .case {
+      padding: var(--space-2xl) var(--space-m);
+      gap: var(--space-2xl);
+    }
+
+    .stats,
+    .compare,
+    .diag-grid,
+    .theme-grid,
+    .tech-grid,
+    .steps-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .stat,
+    .compare-col {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat:last-child,
+    .compare-col:last-child {
+      border-bottom: 0;
+    }
+
+    .tech {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xs);
+    }
+
+    .hero-title {
+      font-size: var(--step-5);
+    }
+
+    .block-head {
+      flex-wrap: wrap;
+      gap: var(--space-2xs) var(--space-s);
+    }
+
+    .block-title {
+      font-size: var(--step-2);
+    }
+
+    .compare-col {
+      padding: var(--space-m);
+    }
+
+    .compare-list li {
+      padding-left: 2em;
+    }
+
+    .snippet,
+    .cmd-snippet {
+      padding: var(--space-m);
+      font-size: 0.78rem;
+    }
+
+    .cmd-head,
+    .panel-head,
+    .frame-head,
+    .lab-foot-meta,
+    .case-foot-meta {
+      flex-wrap: wrap;
+      gap: var(--space-3xs);
+    }
+
+    .diag,
+    .feat,
+    .theme-card {
+      padding: var(--space-m);
+    }
+
+    .steps-list {
+      padding: var(--space-m);
+    }
+
+    .lab-nav,
+    .case-nav {
+      flex-wrap: wrap;
+      gap: var(--space-2xs);
+    }
+  }
+</style>

@@ -297,19 +297,29 @@ const encodings = [
   }
 
   .c-time {
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr auto;
     gap: var(--space-xs);
+    align-items: center;
     color: var(--muted);
+    min-width: 0;
   }
 
   .bar {
     height: 6px;
     border-radius: 1px;
-    flex-shrink: 0;
     width: 0;
+    min-width: 0;
+    max-width: 100%;
     animation: fill 900ms var(--ease-out) forwards;
     animation-delay: 200ms;
+    justify-self: start;
+    align-self: center;
+  }
+
+  .ms {
+    white-space: nowrap;
+    justify-self: end;
   }
 
   .bar-before {
@@ -336,6 +346,7 @@ const encodings = [
   .ms {
     font-size: 0.9em;
     color: var(--muted);
+    white-space: nowrap;
   }
 
   .panel-foot {
@@ -536,17 +547,6 @@ const encodings = [
 
     .row .c-time {
       grid-column: 1 / -1;
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--space-3xs);
-    }
-
-    .bar {
-      max-width: 100%;
-    }
-
-    .ms {
-      align-self: flex-end;
     }
 
     .row-head .c-type,

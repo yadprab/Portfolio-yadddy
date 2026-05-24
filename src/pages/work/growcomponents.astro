@@ -1,0 +1,827 @@
+---
+import Layout from "~/layouts/Layout.astro";
+import TopBar from "~/components/TopBar.astro";
+
+const stats = [
+  { label: "current version", value: "2.0.43" },
+  { label: "packages", value: "6", note: "monorepo" },
+  { label: "components", value: "48", note: "in growcomponents alone" },
+  { label: "arc", value: "2", unit: "years", note: "maintained · active" },
+];
+
+const packages = [
+  {
+    name: "@sinecycle/growcomponents",
+    v: "2.0.43",
+    role: "Design system",
+    detail:
+      "Forty-eight React components — buttons, tables, drawers, forms, modals, popovers, charts. Themable via theme-provider, all strongly typed.",
+  },
+  {
+    name: "@sinecycle/growicons",
+    v: "1.0.16",
+    role: "Icon library",
+    detail:
+      "Independently versioned icon set. Sixteen minor versions means it iterated alongside the design system without coupling release cycles.",
+  },
+  {
+    name: "@sinecycle/growalfred",
+    v: "1.0.1",
+    role: "CLI · onboarding",
+    detail:
+      "Clack-prompt CLI that brings a new Growfin engineer from zero to local dev in one command. State-tracked, auto-resume, Docker auto-start, port-conflict detection.",
+  },
+  {
+    name: "@sinecycle/growtesting",
+    v: "1.0.1",
+    role: "Test infrastructure",
+    detail:
+      "Centralized Vitest config and testing utilities shared across the monorepo. One source of truth for what 'green' means.",
+  },
+  {
+    name: "@sinecycle/growsdk",
+    v: "0.1.0",
+    role: "SDK · in flight",
+    detail:
+      "Client SDK exposing primitives for consumers of the platform. Early development.",
+  },
+  {
+    name: "@sinecycle/growrte",
+    v: "—",
+    role: "Rich text editor",
+    detail:
+      "Editor package shared between surfaces that need long-form input.",
+  },
+];
+
+const componentCategories = [
+  { name: "form primitives", items: ["button", "checkbox", "radio", "number-input", "searchable-select", "date", "custom-field"] },
+  { name: "layout & containers", items: ["flex", "modal", "drawer", "popover", "tooltip", "menu", "details-layout"] },
+  { name: "data display", items: ["table", "list", "tree", "pagination", "expansion", "filter-views"] },
+  { name: "actions & state", items: ["save-button", "cancel-button", "edit-button", "delete-button", "selection-action-bar", "form-footer", "form-header"] },
+  { name: "feedback & meta", items: ["notification", "popconfirm-content", "status-tag", "tag", "avatar", "comment", "highlighted-text"] },
+  { name: "content rendering", items: ["typography", "currency-text", "number-format", "icon", "charts", "AI"] },
+];
+
+const tableFeatures = [
+  { title: "Strongly typed", body: "Generic over <code>TData</code> — every cell renderer, predicate, and event handler is inferred from the row schema. No <code>any</code> escape hatches in the public API." },
+  { title: "Slot-based defaults", body: "Default cell and header components are exported, composable, and override-able. Most consumers wire columns in 4 lines; teams with unusual needs replace individual slots without forking." },
+  { title: "Column customization drawer", body: "Sort, hide, reorder columns from one panel. Column state persists to local or session storage based on consumer choice — survives page reloads without rebuilding." },
+  { title: "Bulk actions", body: "<code>ACTION_BAR</code> mode surfaces a sticky bar with selected count + custom action components. <code>bulkEditLimit</code> caps batch operations safely (default 200)." },
+  { title: "Atom-based state", body: "<code>tableAtom</code> via Jotai keeps the table's selection, pagination, and sort state localized. Updates flow through Immer for safe mutation in event handlers." },
+  { title: "Pattern-matched config", body: "Column customization variants (<code>default</code> / <code>header-only</code>) discriminated with ts-pattern. Adding a new mode is one match arm, not a flag-laden if-else." },
+];
+---
+
+<Layout title="GrowComponents · case study · Yathavan Gomathi">
+  <TopBar />
+
+  <main class="case">
+    <nav class="case-nav" aria-label="case study navigation">
+      <a class="case-back" href="/">
+        <span aria-hidden="true">←</span> back to bundle
+      </a>
+      <span class="case-crumb">
+        <span class="crumb-num">case-study</span>
+        <span class="crumb-name">growcomponents</span>
+      </span>
+    </nav>
+
+    <header class="hero">
+      <p class="hero-eyebrow">
+        <span class="eyebrow-tag">closed-source</span>
+        <span class="eyebrow-sep" aria-hidden="true">·</span>
+        <span class="eyebrow-meta">built at growfin · 2 years · maintained</span>
+      </p>
+      <h1 class="hero-title">GrowComponents</h1>
+      <p class="hero-tagline">
+        The internal design system at Growfin — six packages, forty-eight components,
+        and a flagship data table that quietly powers every product surface.
+      </p>
+    </header>
+
+    <section class="stats" aria-label="at a glance">
+      {stats.map((s) => (
+        <div class="stat">
+          <span class="stat-value">
+            {s.value}
+            {s.unit && <span class="stat-unit">{s.unit}</span>}
+          </span>
+          <span class="stat-label">{s.label}</span>
+          {s.note && <span class="stat-note">{s.note}</span>}
+        </div>
+      ))}
+    </section>
+
+    <section class="block" aria-labelledby="platform-h">
+      <header class="block-head">
+        <span class="block-num">01</span>
+        <h2 class="block-title" id="platform-h">The platform</h2>
+      </header>
+      <p class="block-lede">
+        GrowComponents isn't a component library — it's a six-package platform under
+        the <code>@sinecycle</code> scope, published to GitHub Packages, consumed by every
+        Growfin product surface. Each package owns a release cycle.
+      </p>
+
+      <div class="pkgs">
+        {packages.map((p, i) => (
+          <article class="pkg">
+            <header class="pkg-head">
+              <span class="pkg-index">{String(i + 1).padStart(2, "0")}</span>
+              <code class="pkg-name">{p.name}</code>
+              <span class="pkg-v">v{p.v}</span>
+            </header>
+            <h3 class="pkg-role">{p.role}</h3>
+            <p class="pkg-detail">{p.detail}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="scope-h">
+      <header class="block-head">
+        <span class="block-num">02</span>
+        <h2 class="block-title" id="scope-h">Scope of growcomponents</h2>
+      </header>
+      <p class="block-lede">
+        Forty-eight components, organized by usage pattern rather than alphabet.
+        Categories below; each is a directory under <code>lib/components/</code> with its
+        own Storybook stories and Chromatic visual regression snapshots.
+      </p>
+
+      <ul class="cats">
+        {componentCategories.map((c) => (
+          <li class="cat">
+            <h3 class="cat-name">{c.name}</h3>
+            <ul class="cat-items">
+              {c.items.map((item) => (
+                <li class="cat-chip">{item}</li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="block block-flagship" aria-labelledby="table-h">
+      <header class="block-head">
+        <span class="block-num">03</span>
+        <h2 class="block-title" id="table-h">
+          GrowTable — the flagship
+        </h2>
+      </header>
+
+      <p class="block-lede">
+        Every surface in Growfin that lists data — invoices, customers, disputes, payments,
+        approvals — runs through one component. GrowTable wraps <code>ag-grid-community</code>
+        with a Growfin-shaped API: opinionated defaults, typed columns, persistent state,
+        slot-based cell renderers, bulk actions, an integrated column-customization drawer.
+      </p>
+
+      <div class="table-features">
+        {tableFeatures.map((f) => (
+          <article class="feat">
+            <h3 class="feat-title">{f.title}</h3>
+            <p class="feat-body" set:html={f.body}></p>
+          </article>
+        ))}
+      </div>
+
+      <pre class="snippet"><code>{`// Consumer-facing API — strongly typed end to end
+<GrowTable<Invoice>
+  gridProps={{ rowData: invoices, columnDefs }}
+  tablePaginationProps={{ total, pageSize: 50, handlePageChange }}
+  bulkActionComponents={[<MarkPaid />, <Export />]}
+  enableColumnCustom={{ type: "default", content: {
+    preserve: { storage: "local", key: "invoices.cols" }
+  }}}
+  bulkActionMode="ACTION_BAR"
+  bulkEditLimit={200}
+/>`}</code></pre>
+    </section>
+
+    <section class="block" aria-labelledby="authorship-h">
+      <header class="block-head">
+        <span class="block-num">04</span>
+        <h2 class="block-title" id="authorship-h">Authorship</h2>
+      </header>
+
+      <p class="block-lede">
+        GrowComponents grew over two years. I authored the architecture, the base
+        components — button, modal, drawer, popover, tooltip, typography, form
+        primitives — and the flagship GrowTable. As the library matured, junior
+        engineers on the team contributed feature components on top of those
+        primitives. What shipped is larger than any one author could have built alone.
+      </p>
+
+      <div class="authorship-grid">
+        <div class="auth-col">
+          <h3 class="auth-name">foundation</h3>
+          <p class="auth-detail">monorepo architecture · build pipeline · base components · theme system · GrowTable · publishing workflow</p>
+          <p class="auth-meta">authored by me</p>
+        </div>
+        <div class="auth-col">
+          <h3 class="auth-name">extensions</h3>
+          <p class="auth-detail">feature components · domain-specific patterns · later additions to the chart family</p>
+          <p class="auth-meta">contributed by team · reviewed by me</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="tech-h">
+      <header class="block-head">
+        <span class="block-num">05</span>
+        <h2 class="block-title" id="tech-h">Tech</h2>
+      </header>
+
+      <ul class="tech-grid">
+        <li class="tech">
+          <span class="tech-cat">language</span>
+          <span class="tech-items">TypeScript · strict</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">runtime deps</span>
+          <span class="tech-items">React · ag-grid · jotai · immer · ts-pattern · lodash-es</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">build</span>
+          <span class="tech-items">Vite · Biome · tsc type-only</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">monorepo</span>
+          <span class="tech-items">pnpm workspaces · changesets · dependency-cruiser circular check</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">stories &amp; visual</span>
+          <span class="tech-items">Storybook · Chromatic</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">distribution</span>
+          <span class="tech-items">GitHub Packages · <code>@sinecycle</code> scope · semantic versioning</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">testing</span>
+          <span class="tech-items">Vitest via shared <code>@sinecycle/growtesting</code> config</span>
+        </li>
+        <li class="tech">
+          <span class="tech-cat">ci</span>
+          <span class="tech-items">GitHub Actions · publish on merge to main</span>
+        </li>
+      </ul>
+    </section>
+
+    <footer class="case-footer">
+      <a class="case-back case-back-foot" href="/">
+        <span aria-hidden="true">←</span> back to bundle
+      </a>
+      <p class="case-foot-meta">
+        case study compiled <time datetime={new Date().toISOString().slice(0, 10)}>{new Date().toISOString().slice(0, 10)}</time>
+        <span aria-hidden="true"> · </span>
+        source closed · case-study by <a href="/" class="case-foot-link">Yathavan Gomathi</a>
+      </p>
+    </footer>
+  </main>
+</Layout>
+
+<style>
+  .case {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: var(--space-3xl) var(--space-l) var(--space-2xl);
+    display: grid;
+    gap: var(--space-3xl);
+  }
+
+  /* ─── Nav ─────────────────────────────────────── */
+
+  .case-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    padding-bottom: var(--space-m);
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .case-back {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .case-back:hover,
+  .case-back:focus-visible {
+    color: var(--text-strong);
+  }
+
+  .case-crumb {
+    display: inline-flex;
+    gap: 0.6ch;
+    align-items: baseline;
+  }
+
+  .crumb-num {
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .crumb-name::before {
+    content: "// ";
+    color: var(--border);
+  }
+
+  .crumb-name {
+    color: var(--built);
+  }
+
+  /* ─── Hero ────────────────────────────────────── */
+
+  .hero {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .hero-eyebrow {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.6ch;
+    align-items: baseline;
+  }
+
+  .eyebrow-tag {
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 2px 8px;
+    border-radius: var(--radius-s);
+    letter-spacing: 0.06em;
+    text-transform: lowercase;
+  }
+
+  .eyebrow-sep {
+    color: var(--border);
+  }
+
+  .hero-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-6);
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    color: var(--text-strong);
+  }
+
+  .hero-tagline {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--step-1);
+    line-height: 1.5;
+    max-width: 60ch;
+  }
+
+  /* ─── Stats ───────────────────────────────────── */
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+  }
+
+  .stat {
+    padding: var(--space-l);
+    border-right: 1px solid var(--border);
+    display: grid;
+    gap: var(--space-2xs);
+    font-family: var(--font-mono);
+  }
+
+  .stat:last-child {
+    border-right: 0;
+  }
+
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    line-height: 1;
+    color: var(--text-strong);
+    letter-spacing: -0.02em;
+    display: inline-flex;
+    gap: 0.3ch;
+    align-items: baseline;
+  }
+
+  .stat-unit {
+    font-size: 0.45em;
+    color: var(--muted);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  .stat-label {
+    font-size: var(--step--1);
+    color: var(--muted);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  .stat-note {
+    font-size: var(--step--1);
+    color: var(--built);
+  }
+
+  /* ─── Block / section ─────────────────────────── */
+
+  .block {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+    padding-bottom: var(--space-s);
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .block-num {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .block-title {
+    margin: 0;
+    font-size: var(--step-3);
+    letter-spacing: -0.02em;
+    color: var(--text-strong);
+  }
+
+  .block-lede {
+    color: var(--text);
+    font-size: var(--step-0);
+    line-height: 1.6;
+    max-width: 72ch;
+    margin: 0;
+  }
+
+  .block-lede code,
+  .feat-body code,
+  .pkg-name {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+  }
+
+  /* ─── Packages list ───────────────────────────── */
+
+  .pkgs {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .pkg {
+    padding: var(--space-m) var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  .pkg-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+
+  .pkg-index {
+    color: var(--accent);
+    letter-spacing: 0.06em;
+  }
+
+  .pkg-name {
+    color: var(--text-strong);
+    background: none;
+    padding: 0;
+  }
+
+  .pkg-v {
+    color: var(--built);
+    margin-left: auto;
+  }
+
+  .pkg-role {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    color: var(--text-strong);
+    letter-spacing: -0.01em;
+  }
+
+  .pkg-detail {
+    margin: 0;
+    color: var(--muted);
+    max-width: 72ch;
+    line-height: 1.55;
+  }
+
+  /* ─── Component categories ────────────────────── */
+
+  .cats {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-m);
+  }
+
+  .cat {
+    padding: var(--space-m) var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .cat-name {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--built);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  .cat-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+  }
+
+  .cat-chip {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: var(--radius-s);
+  }
+
+  /* ─── GrowTable flagship ──────────────────────── */
+
+  .block-flagship .block-head {
+    border-bottom-color: rgb(232 163 61 / 0.3);
+  }
+
+  .table-features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-m);
+  }
+
+  .feat {
+    padding: var(--space-m) var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .feat-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+
+  .feat-body {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.55;
+  }
+
+  .snippet {
+    margin: 0;
+    padding: var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    line-height: 1.7;
+    color: var(--text);
+    overflow-x: auto;
+  }
+
+  /* ─── Authorship ──────────────────────────────── */
+
+  .authorship-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+  }
+
+  .auth-col {
+    padding: var(--space-l);
+    border-right: 1px solid var(--border);
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .auth-col:last-child {
+    border-right: 0;
+    background: rgb(255 255 255 / 0.01);
+  }
+
+  .auth-name {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    text-transform: lowercase;
+    letter-spacing: 0.06em;
+    color: var(--built);
+  }
+
+  .auth-col:first-child .auth-name {
+    color: var(--accent);
+  }
+
+  .auth-detail {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.55;
+  }
+
+  .auth-meta {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  /* ─── Tech ────────────────────────────────────── */
+
+  .tech-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-s);
+  }
+
+  .tech {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: var(--space-s);
+    padding: var(--space-s) var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-s);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  .tech-cat {
+    color: var(--built);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  .tech-items {
+    color: var(--text);
+  }
+
+  .tech-items code {
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 1px 5px;
+    border-radius: var(--radius-s);
+  }
+
+  /* ─── Footer ──────────────────────────────────── */
+
+  .case-footer {
+    padding-top: var(--space-l);
+    border-top: 1px dashed var(--border);
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .case-back-foot {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  .case-foot-meta {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .case-foot-link {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .case-foot-link:hover,
+  .case-foot-link:focus-visible {
+    color: var(--text-strong);
+  }
+
+  /* ─── Mobile ──────────────────────────────────── */
+
+  @media (max-width: 760px) {
+    .case {
+      padding: var(--space-2xl) var(--space-m);
+      gap: var(--space-2xl);
+    }
+
+    .stats,
+    .cats,
+    .table-features,
+    .authorship-grid,
+    .tech-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .stat,
+    .auth-col {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat:last-child,
+    .auth-col:last-child {
+      border-bottom: 0;
+    }
+
+    .tech {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xs);
+    }
+
+    .hero-title {
+      font-size: var(--step-5);
+    }
+
+    .block-head {
+      flex-wrap: wrap;
+      gap: var(--space-2xs) var(--space-s);
+    }
+
+    .block-title {
+      font-size: var(--step-2);
+    }
+
+    .pkg {
+      padding: var(--space-m);
+    }
+
+    .pkg-v {
+      margin-left: 0;
+    }
+
+    .snippet {
+      padding: var(--space-m);
+      font-size: 0.8rem;
+    }
+
+    .feat,
+    .cat {
+      padding: var(--space-m);
+    }
+  }
+</style>

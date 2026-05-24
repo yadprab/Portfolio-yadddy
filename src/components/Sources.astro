@@ -1,0 +1,377 @@
+---
+const caseStudies = [
+  {
+    id: "growcomponents",
+    name: "GrowComponents",
+    url: "/work/growcomponents",
+    description:
+      "The internal design system at Growfin — six packages, forty-eight components, two years of architecture and maintenance. I authored the foundation, juniors contributed on top. Flagship: GrowTable.",
+    tags: ["design-system", "typescript", "monorepo", "ag-grid"],
+    meta: "2 years · 6 packages",
+    badge: "featured",
+  },
+  {
+    id: "growalfred",
+    name: "GrowAlfred",
+    url: "/work/growalfred",
+    description:
+      "Internal CLI that takes a new Growfin engineer from a clean laptop to a running local environment in one command. State-tracked, auto-resumable, intelligent diagnostics. Cut onboarding from 2–3 days to ~30 minutes.",
+    tags: ["cli", "node", "clack", "state-machine"],
+    meta: "cli · solo",
+    badge: "case study",
+  },
+];
+
+const projects = [
+  {
+    id: "BulbReact",
+    name: "BulbReact",
+    url: "https://github.com/yaddycomponents/BulbReact",
+    description:
+      "Interactive React teaching platform using an electrical-system metaphor. Rooms teach useState, breakers cascade prop drilling, motion sensors demonstrate useEffect cleanup. Built on React Flow.",
+    tags: ["react", "react-flow", "teaching"],
+    status: "public",
+  },
+  {
+    id: "Module-CRM",
+    name: "Module-CRM",
+    url: "https://github.com/yaddycomponents/Module-CRM",
+    description:
+      "Module Federation demo: CRM host + CashApps remote + shared component package, pnpm workspaces. Real micro-frontend architecture, not just a buzzword.",
+    tags: ["module-federation", "pnpm-workspaces", "antd"],
+    status: "public",
+  },
+];
+---
+
+<section class="stage" id="stage-sources" aria-label="source repositories">
+  <header class="stage-tag">
+    <span class="num">07</span>
+    <span class="name">sources</span>
+  </header>
+
+  <p class="lede">
+    The repositories these chunks were built from. <code>yaddycomponents</code> is
+    my org for open frontend work — design tokens, micro-frontend experiments,
+    teaching tools.
+  </p>
+
+  <div class="case-studies">
+    {caseStudies.map((c) => (
+      <a
+        class="card card-featured"
+        href={c.url}
+        aria-label={`Read the ${c.name} case study`}
+      >
+        <header class="card-head">
+          <span class="card-badge">{c.badge}</span>
+          <span class="card-status card-status-closed">
+            <span class="status-dot status-dot-closed" aria-hidden="true"></span>
+            closed-source
+          </span>
+          <span class="card-external" aria-hidden="true">→</span>
+        </header>
+
+        <div class="card-body">
+          <h3 class="card-name">{c.name}</h3>
+          <p class="card-meta">{c.meta}</p>
+          <p class="card-description">{c.description}</p>
+          <ul class="card-tags">
+            {c.tags.map((t) => <li class="tag">{t}</li>)}
+          </ul>
+        </div>
+      </a>
+    ))}
+  </div>
+
+  <div class="grid">
+    {projects.map((p) => (
+      <a
+        class="card"
+        href={p.url}
+        target="_blank"
+        rel="noopener"
+        aria-label={`${p.name} on GitHub`}
+      >
+        <header class="card-head">
+          <span class="card-status">
+            <span class="status-dot" aria-hidden="true"></span>
+            {p.status}
+          </span>
+          <span class="card-external" aria-hidden="true">↗</span>
+        </header>
+
+        <div class="card-body">
+          <h3 class="card-name">{p.name}</h3>
+          <p class="card-description">{p.description}</p>
+          <ul class="card-tags">
+            {p.tags.map((t) => <li class="tag">{t}</li>)}
+          </ul>
+        </div>
+      </a>
+    ))}
+  </div>
+
+  <footer class="footnote">
+    <span class="check">✓</span>
+    <span>2 case studies · 2 public sources</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span class="muted">more on</span>
+    <a class="org-link" href="https://github.com/yaddycomponents" target="_blank" rel="noopener">
+      github.com/yaddycomponents <span aria-hidden="true">↗</span>
+    </a>
+  </footer>
+</section>
+
+<style>
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    padding: var(--space-3xl) var(--space-l);
+    max-width: var(--content-max);
+    margin: 0 auto;
+    border-top: 1px dashed var(--border);
+    display: grid;
+    gap: var(--space-xl);
+    align-content: start;
+  }
+
+  .stage-tag {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+  }
+
+  .stage-tag .num { color: var(--accent); letter-spacing: 0.1em; }
+  .stage-tag .name { color: var(--built); }
+  .stage-tag .name::before { content: "// "; color: var(--border); }
+
+  .lede {
+    color: var(--muted);
+    font-size: var(--step-0);
+    max-width: 64ch;
+  }
+
+  .lede code {
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  /* ─── Card base ────────────────────────────────── */
+
+  .card {
+    display: grid;
+    gap: var(--space-m);
+    padding: var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    color: var(--text);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      background var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out);
+  }
+
+  .card:hover,
+  .card:focus-visible {
+    border-color: var(--accent);
+    background: var(--surface-2);
+    outline: none;
+  }
+
+  .card:focus-visible {
+    box-shadow: 0 0 0 3px rgb(232 163 61 / 0.18);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .card-badge {
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.1);
+    padding: 1px 8px;
+    border-radius: var(--radius-s);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75em;
+  }
+
+  .card-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55ch;
+    color: var(--built);
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--built);
+    box-shadow: 0 0 6px var(--built-glow);
+  }
+
+  .card-external {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 1.05em;
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out);
+  }
+
+  .card:hover .card-external,
+  .card:focus-visible .card-external {
+    color: var(--accent);
+    transform: translate(2px, -2px);
+  }
+
+  .card-body {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .card-name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    letter-spacing: -0.02em;
+    color: var(--text-strong);
+    line-height: 1.1;
+  }
+
+  .card-meta {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
+  .card-description {
+    margin: 0;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: var(--step-0);
+    line-height: 1.55;
+    max-width: none;
+  }
+
+  .card-tags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: var(--radius-s);
+  }
+
+  .card:hover .tag,
+  .card:focus-visible .tag {
+    border-color: rgb(232 163 61 / 0.3);
+    color: var(--text);
+  }
+
+  /* ─── Featured card ────────────────────────────── */
+
+  .card-featured {
+    border-color: rgb(232 163 61 / 0.4);
+    background:
+      radial-gradient(
+        100% 100% at 0% 0%,
+        rgb(232 163 61 / 0.06) 0%,
+        transparent 60%
+      ),
+      var(--surface);
+  }
+
+  .card-featured .card-name {
+    font-size: var(--step-3);
+    color: var(--accent);
+  }
+
+  /* ─── Case studies stack ───────────────────────── */
+
+  .case-studies {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-m);
+  }
+
+  /* ─── Secondary cards grid ─────────────────────── */
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-m);
+  }
+
+  /* Closed-source status colour shift */
+  .card-status-closed {
+    color: var(--muted);
+  }
+
+  .status-dot-closed {
+    background: var(--muted);
+    box-shadow: none;
+  }
+
+  /* ─── Footnote ─────────────────────────────────── */
+
+  .footnote {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: center;
+    padding-top: var(--space-l);
+    border-top: 1px dashed var(--border);
+  }
+
+  .footnote .check { color: var(--built); }
+  .footnote .sep { color: var(--border); }
+  .footnote .muted { color: var(--muted); }
+
+  .org-link {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .org-link:hover,
+  .org-link:focus-visible {
+    color: var(--text-strong);
+  }
+
+  @media (max-width: 760px) {
+    .stage { padding: var(--space-2xl) var(--space-m); }
+    .grid { grid-template-columns: 1fr; }
+    .card { padding: var(--space-m); }
+    .card-featured .card-name { font-size: var(--step-2); }
+  }
+</style>

@@ -196,25 +196,25 @@ const layers = [
   /* Stagger a subtle reveal */
   .layer {
     opacity: 0;
-    animation: layer-in 700ms var(--ease-out) forwards;
+    animation: layer-in 420ms var(--ease-out) forwards;
   }
 
-  .layer-top { animation-delay: 1800ms, 0s; }
-  .layer-1 { animation-delay: 2000ms; }
-  .layer-2 { animation-delay: 2150ms; }
-  .layer-3 { animation-delay: 2300ms; }
-  .layer-4 { animation-delay: 2450ms; }
+  .layer-top { animation-delay: 700ms, 0s; }
+  .layer-1 { animation-delay: 800ms; }
+  .layer-2 { animation-delay: 880ms; }
+  .layer-3 { animation-delay: 960ms; }
+  .layer-4 { animation-delay: 1040ms; }
 
   .connector {
     opacity: 0;
-    animation: layer-in 600ms var(--ease-out) forwards;
+    animation: layer-in 360ms var(--ease-out) forwards;
   }
 
-  .connector:nth-of-type(1) { animation-delay: 2700ms; }
-  .connector:nth-of-type(2) { animation-delay: 2850ms; }
-  .connector:nth-of-type(3) { animation-delay: 3000ms; }
-  .connector:nth-of-type(4) { animation-delay: 3150ms; }
-  .connector:nth-of-type(5) { animation-delay: 3300ms; }
+  .connector:nth-of-type(1) { animation-delay: 1150ms; }
+  .connector:nth-of-type(2) { animation-delay: 1230ms; }
+  .connector:nth-of-type(3) { animation-delay: 1310ms; }
+  .connector:nth-of-type(4) { animation-delay: 1390ms; }
+  .connector:nth-of-type(5) { animation-delay: 1470ms; }
 
   @keyframes layer-in {
     to { opacity: 1; }

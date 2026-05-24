@@ -8,6 +8,10 @@
     <span class="mark-bracket">]</span>
   </a>
 
+  <nav class="nav-links" aria-label="primary">
+    <a class="nav-link" href="/lab/deps">labs</a>
+  </nav>
+
   <nav class="meta" aria-label="build status">
     <span class="dot" aria-hidden="true"></span>
     <span class="label">
@@ -50,6 +54,31 @@
 
   .mark-bracket {
     color: var(--accent);
+  }
+
+  .nav-links {
+    display: inline-flex;
+    gap: var(--space-s);
+    align-items: center;
+    margin-right: auto;
+    padding-left: var(--space-m);
+  }
+
+  .nav-link {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .nav-link::before {
+    content: "/ ";
+    color: var(--border);
+  }
+
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    color: var(--accent);
+    outline: none;
   }
 
   .meta {
@@ -108,6 +137,9 @@
     .sep,
     .toggle {
       display: none;
+    }
+    .nav-links {
+      padding-left: var(--space-xs);
     }
   }
 </style>

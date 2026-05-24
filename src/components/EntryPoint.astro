@@ -43,7 +43,7 @@ import BundleBox from "~/components/BundleBox.astro";
   <a class="scroll-hint" href="#stage-resolve" data-play-build aria-label="play the build pipeline">
     <span class="hint-arrow" aria-hidden="true">▶</span>
     <span class="hint-label">play build</span>
-    <span class="hint-meta">8 stages · scroll to interrupt</span>
+    <span class="hint-meta">9 stages · scroll to interrupt</span>
   </a>
 </section>
 
@@ -65,6 +65,7 @@ import BundleBox from "~/components/BundleBox.astro";
       "stage-tree-shake",
       "stage-compress",
       "stage-split",
+      "stage-sources",
       "stage-minify",
       "stage-output",
       "stage-contact",
@@ -187,7 +188,7 @@ import BundleBox from "~/components/BundleBox.astro";
     align-items: baseline;
     gap: var(--space-s);
     opacity: 0;
-    animation: fade-in 600ms var(--ease-out) 100ms forwards;
+    animation: fade-in 280ms var(--ease-out) 0ms forwards;
   }
 
   .stage-tag .num {
@@ -233,7 +234,7 @@ import BundleBox from "~/components/BundleBox.astro";
     overflow: hidden;
     white-space: nowrap;
     width: 0;
-    animation: type 1400ms steps(32, end) 400ms forwards;
+    animation: type 700ms steps(32, end) 200ms forwards;
   }
 
   .caret {
@@ -257,11 +258,11 @@ import BundleBox from "~/components/BundleBox.astro";
   }
 
   .line-1 {
-    animation: line-in 400ms var(--ease-out) 1900ms forwards;
+    animation: line-in 280ms var(--ease-out) 950ms forwards;
   }
 
   .line-2 {
-    animation: line-in 400ms var(--ease-out) 2200ms forwards;
+    animation: line-in 280ms var(--ease-out) 1100ms forwards;
   }
 
   .check {
@@ -292,12 +293,12 @@ import BundleBox from "~/components/BundleBox.astro";
   }
 
   .word-1 {
-    animation: word-in 700ms var(--ease-out) 2500ms forwards;
+    animation: word-in 480ms var(--ease-out) 600ms forwards;
   }
 
   .word-2 {
     color: var(--accent);
-    animation: word-in 700ms var(--ease-out) 2700ms forwards;
+    animation: word-in 480ms var(--ease-out) 780ms forwards;
   }
 
   .tagline {
@@ -306,7 +307,7 @@ import BundleBox from "~/components/BundleBox.astro";
     line-height: 1.5;
     max-width: 48ch;
     opacity: 0;
-    animation: fade-in 700ms var(--ease-out) 3100ms forwards;
+    animation: fade-in 480ms var(--ease-out) 1300ms forwards;
   }
 
   .scroll-hint {
@@ -322,7 +323,7 @@ import BundleBox from "~/components/BundleBox.astro";
     border: 1px solid var(--border);
     border-radius: var(--radius-l);
     opacity: 0;
-    animation: fade-in 700ms var(--ease-out) 3500ms forwards;
+    animation: fade-in 480ms var(--ease-out) 1700ms forwards;
     transition:
       color var(--duration-fast) var(--ease-out),
       border-color var(--duration-fast) var(--ease-out),

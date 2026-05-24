@@ -1,0 +1,1174 @@
+---
+import Layout from "~/layouts/Layout.astro";
+import TopBar from "~/components/TopBar.astro";
+
+const menu = [
+  {
+    id: "margherita",
+    name: "Margherita Pizza",
+    note: "the classic",
+    prep: [
+      "dough · 200g",
+      "san marzano sauce · 60ml",
+      "mozzarella di bufala · 80g",
+      "basil · 5 leaves",
+      "olive oil · drizzle",
+    ],
+  },
+  {
+    id: "espresso",
+    name: "Espresso",
+    note: "single shot",
+    prep: ["arabica beans · 18g · ground fine", "filtered water · 30ml · 92°C"],
+  },
+  {
+    id: "tiramisu",
+    name: "Tiramisu",
+    note: "house-made",
+    prep: [
+      "mascarpone · 250g",
+      "ladyfingers · 12",
+      "espresso · cooled · 100ml",
+      "cocoa powder · dusting",
+      "egg yolks · 3 · whisked",
+      "sugar · 75g",
+    ],
+  },
+];
+
+const scenarios = [
+  {
+    id: "perfect",
+    label: "pantry matches recipe perfectly",
+    install: { verdict: "ok", line: "Whole milk is here. Proceeding as written." },
+    ci: { verdict: "ok", line: "Manifest matches. Cooking." },
+  },
+  {
+    id: "substitute",
+    label: "recipe wants whole milk · pantry has oat",
+    install: {
+      verdict: "ok-warn",
+      line: "Close enough. Using oat milk and noting it in the recipe for next time.",
+    },
+    ci: {
+      verdict: "fail",
+      line: "Refused. The recipe says whole milk. I am not making this until the pantry matches.",
+    },
+  },
+  {
+    id: "missing",
+    label: "recipe wants vanilla extract · pantry has none",
+    install: {
+      verdict: "ok-warn",
+      line: "Walking to the corner shop. Recipe will be updated to whatever brand I find.",
+    },
+    ci: {
+      verdict: "fail",
+      line: "Refused. I will not improvise. Stock the pantry, hand me the new recipe.",
+    },
+  },
+];
+
+const shopItems = [
+  { id: "dough", label: "pizza dough", real: "react (in your app)", bin: "food", reason: "the customer eats this · runtime needs it" },
+  { id: "mozz", label: "mozzarella", real: "axios (in a server)", bin: "food", reason: "shipped in every order · runtime needs it" },
+  { id: "tomato", label: "tomato sauce", real: "lodash-es", bin: "food", reason: "ingredient in the finished dish" },
+
+  { id: "cutter", label: "pizza cutter", real: "vitest", bin: "kitchen", reason: "you use it · the customer never sees it" },
+  { id: "apron", label: "kitchen apron", real: "@biomejs/biome", bin: "kitchen", reason: "developer tool · not in production" },
+  { id: "types", label: "kitchen labels", real: "@types/node", bin: "kitchen", reason: "types erased at build · dev only" },
+  { id: "oven", label: "the pizza oven", real: "vite", bin: "kitchen", reason: "build infrastructure · stays in the kitchen" },
+
+  { id: "plate", label: "customer's own plate", real: "react (inside your UI library)", bin: "byo", reason: "the host already has it · don't ship a second one" },
+  { id: "wine", label: "BYO wine", real: "styled-components (inside a UI lib)", bin: "byo", reason: "library assumes host has it · avoids duplicate instances" },
+  { id: "fork", label: "customer's silverware", real: "vue-router (in a Vue plugin)", bin: "byo", reason: "Vue plugins assume host owns Vue + router" },
+];
+
+const bins = [
+  {
+    id: "food",
+    title: "The food",
+    sub: "what the customer gets",
+    pkg: "dependencies",
+    rule: "Installed alongside your package. The runtime literally needs them.",
+  },
+  {
+    id: "kitchen",
+    title: "Behind the counter",
+    sub: "what the kitchen uses",
+    pkg: "devDependencies",
+    rule: "Yours alone. Consumers of your package skip these entirely.",
+  },
+  {
+    id: "byo",
+    title: "Customer brings their own",
+    sub: "BYO · already in their kitchen",
+    pkg: "peerDependencies",
+    rule: "Required to exist in the host project. You don't bring a second copy.",
+  },
+];
+
+const totalItems = shopItems.length;
+---
+
+<Layout title="Dependencies, a field guide · Yathavan Gomathi">
+  <TopBar />
+
+  <main class="lab">
+    <nav class="lab-nav" aria-label="lab navigation">
+      <a class="lab-back" href="/">
+        <span aria-hidden="true">←</span> back to bundle
+      </a>
+      <span class="lab-crumb">
+        <span class="crumb-num">lab</span>
+        <span class="crumb-name">deps</span>
+      </span>
+    </nav>
+
+    <header class="hero">
+      <p class="hero-eyebrow">
+        <span class="eyebrow-tag">interactive</span>
+        <span class="eyebrow-sep" aria-hidden="true">·</span>
+        <span class="eyebrow-meta">told with pizza, two chefs, and a corkscrew</span>
+      </p>
+      <h1 class="hero-title">Dependencies, a field guide</h1>
+      <p class="hero-tagline">
+        Three things every frontend engineer should be able to explain on a
+        whiteboard. We're going to do it with food.
+      </p>
+    </header>
+
+    <!-- ─── Widget 1: order vs kitchen prep ─── -->
+    <section class="block" aria-labelledby="lock-h">
+      <header class="block-head">
+        <span class="block-num">01</span>
+        <h2 class="block-title" id="lock-h">The order &amp; the kitchen</h2>
+      </header>
+      <p class="block-lede">
+        You walk into a restaurant and order three things. The kitchen needs
+        eleven. Click a menu item — see what the kitchen actually does.
+      </p>
+
+      <div class="restaurant" data-restaurant>
+        <article class="rest-side rest-order">
+          <header class="rest-head">
+            <span class="rest-tag">menu order</span>
+            <span class="rest-meta">table 7 · what you ask for</span>
+          </header>
+
+          <ul class="menu" role="list">
+            {menu.map((m, i) => (
+              <li>
+                <button
+                  class="menu-item"
+                  type="button"
+                  data-menu={m.id}
+                  aria-expanded={i === 0 ? "true" : "false"}
+                >
+                  <span class="menu-bullet" aria-hidden="true">●</span>
+                  <span class="menu-name">{m.name}</span>
+                  <span class="menu-note">{m.note}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <p class="rest-foot">
+            <span class="rest-stat-num">3</span>
+            <span class="rest-stat-label">items on the chit</span>
+          </p>
+        </article>
+
+        <article class="rest-side rest-kitchen">
+          <header class="rest-head">
+            <span class="rest-tag">kitchen prep</span>
+            <span class="rest-meta">what actually gets made</span>
+          </header>
+
+          <div class="prep">
+            {menu.map((m, i) => (
+              <div
+                class={`prep-group ${i === 0 ? "is-open" : ""}`}
+                data-prep={m.id}
+              >
+                <header class="prep-head">
+                  <span class="prep-name">{m.name}</span>
+                  <span class="prep-count">{m.prep.length} prep items</span>
+                </header>
+                <ul class="prep-list">
+                  {m.prep.map((step) => (
+                    <li class="prep-step">
+                      <span class="prep-branch" aria-hidden="true">├</span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <p class="rest-foot">
+            <span class="rest-stat-num">{menu.reduce((s, m) => s + m.prep.length, 0)}</span>
+            <span class="rest-stat-label">individual ingredients</span>
+          </p>
+        </article>
+      </div>
+
+      <p class="block-takeaway">
+        <span class="takeaway-tag">the punchline</span>
+        <span>
+          Three things on the order chit became thirteen in the kitchen. Your
+          <code>package.json</code> is the order chit — short, human-curated.
+          Your <code>package-lock.json</code> is the kitchen prep list —
+          exhaustive, machine-generated, the only way two cooks (or two CI
+          servers) make the exact same dish on different days. A typical React
+          app: 10 lines in package.json, <em>~1,200</em> in the lockfile.
+          Commit the lockfile.
+        </span>
+      </p>
+    </section>
+
+    <!-- ─── Widget 2: two chefs ─── -->
+    <section class="block" aria-labelledby="ci-h">
+      <header class="block-head">
+        <span class="block-num">02</span>
+        <h2 class="block-title" id="ci-h">Two chefs, one pantry</h2>
+      </header>
+      <p class="block-lede">
+        Same recipe, same pantry, very different personalities. Pick what the
+        pantry looks like today — watch each chef react.
+      </p>
+
+      <div class="chefs" data-chefs>
+        <div class="scenario-picker" role="radiogroup" aria-label="pantry state">
+          {scenarios.map((s, i) => (
+            <label class="scenario">
+              <input
+                type="radio"
+                name="pantry"
+                value={s.id}
+                checked={i === 0}
+              />
+              <span class="scenario-dot" aria-hidden="true"></span>
+              <span class="scenario-label">{s.label}</span>
+            </label>
+          ))}
+        </div>
+
+        <div class="chef-grid">
+          <article class="chef chef-install">
+            <header class="chef-head">
+              <span class="chef-role">improv chef</span>
+              <span class="chef-cmd">≡ <code>npm install</code></span>
+            </header>
+            <p class="chef-desc">
+              Reads the recipe, scans the pantry. Substitutes when needed.
+              Updates the recipe notes for next time.
+            </p>
+
+            {scenarios.map((s, i) => (
+              <div
+                class={`chef-reaction reaction-${s.verdict ?? s.install.verdict}`}
+                data-scenario={s.id}
+                style={`--initial: ${i === 0 ? "block" : "none"};`}
+              >
+                <span class="reaction-glyph" aria-hidden="true">{s.install.verdict === "ok" ? "✓" : s.install.verdict === "ok-warn" ? "⚠" : "✗"}</span>
+                <p class="reaction-quote">"{s.install.line}"</p>
+              </div>
+            ))}
+          </article>
+
+          <article class="chef chef-ci">
+            <header class="chef-head">
+              <span class="chef-role">strict chef</span>
+              <span class="chef-cmd">≡ <code>npm ci</code></span>
+            </header>
+            <p class="chef-desc">
+              Reads only what's locked. If the pantry disagrees with the
+              recipe by a single ingredient, refuses to cook.
+            </p>
+
+            {scenarios.map((s, i) => (
+              <div
+                class={`chef-reaction reaction-${s.ci.verdict}`}
+                data-scenario={s.id}
+                style={`--initial: ${i === 0 ? "block" : "none"};`}
+              >
+                <span class="reaction-glyph" aria-hidden="true">{s.ci.verdict === "ok" ? "✓" : s.ci.verdict === "ok-warn" ? "⚠" : "✗"}</span>
+                <p class="reaction-quote">"{s.ci.line}"</p>
+              </div>
+            ))}
+          </article>
+        </div>
+      </div>
+
+      <p class="block-takeaway">
+        <span class="takeaway-tag">the punchline</span>
+        <span>
+          The strict chef seems unreasonable — until you remember that on
+          production night you don't <em>want</em> improvisation. Use
+          <code>npm install</code> while you're cooking new dishes (development).
+          Use <code>npm ci</code> on production night (CI &amp; deploys). Quiet
+          substitutions on a Friday afternoon are how Monday's incident report
+          gets written.
+        </span>
+      </p>
+    </section>
+
+    <!-- ─── Widget 3: pizza shop setup ─── -->
+    <section class="block" aria-labelledby="types-h">
+      <header class="block-head">
+        <span class="block-num">03</span>
+        <h2 class="block-title" id="types-h">Setting up the pizza shop</h2>
+      </header>
+      <p class="block-lede">
+        Open a pizza shop. Sort ten things into three buckets — what you
+        serve, what stays in the kitchen, and what the customer brings
+        themselves. The right column will surprise you on a couple of them.
+      </p>
+
+      <div class="shop" data-shop>
+        <div class="shop-items">
+          {shopItems.map((i) => (
+            <button
+              class="shop-chip"
+              type="button"
+              data-id={i.id}
+              data-bin={i.bin}
+            >
+              <span class="chip-label">{i.label}</span>
+              <span class="chip-real">{i.real}</span>
+            </button>
+          ))}
+        </div>
+
+        <div class="shop-bins">
+          {bins.map((b) => (
+            <article class="shop-bin" data-bin={b.id}>
+              <header class="bin-head">
+                <h3 class="bin-title">{b.title}</h3>
+                <span class="bin-sub">{b.sub}</span>
+              </header>
+              <p class="bin-rule">{b.rule}</p>
+              <code class="bin-pkg">{b.pkg}</code>
+              <ul class="bin-items" data-items></ul>
+            </article>
+          ))}
+        </div>
+
+        <div class="shop-status">
+          <span class="shop-status-text" data-status>0 / {totalItems} sorted</span>
+          <button class="shop-reset" type="button" data-reset>reset</button>
+        </div>
+      </div>
+
+      <p class="block-takeaway">
+        <span class="takeaway-tag">the punchline</span>
+        <span>
+          The pizza shop test: <em>"does the customer take this home?"</em>
+          Yes → <code>dependencies</code>. No, you keep it → <code>devDependencies</code>.
+          "Customer brings their own" → <code>peerDependencies</code>. The
+          single trap most engineers fall in: putting React in
+          <code>dependencies</code> of a library. Don't — the consumer already
+          has React. Two copies break hooks.
+        </span>
+      </p>
+    </section>
+
+    <footer class="lab-footer">
+      <a class="lab-back lab-back-foot" href="/">
+        <span aria-hidden="true">←</span> back to bundle
+      </a>
+      <p class="lab-foot-meta">
+        lab compiled <time datetime={new Date().toISOString().slice(0, 10)}>{new Date().toISOString().slice(0, 10)}</time>
+        <span aria-hidden="true"> · </span>
+        more notes coming · by <a href="/" class="lab-foot-link">Yathavan Gomathi</a>
+      </p>
+    </footer>
+  </main>
+</Layout>
+
+<script>
+  // ── Widget 1: restaurant ─────────────────────────────
+  const rest = document.querySelector<HTMLElement>("[data-restaurant]");
+  if (rest) {
+    const buttons = rest.querySelectorAll<HTMLButtonElement>(".menu-item");
+    const groups = rest.querySelectorAll<HTMLElement>(".prep-group");
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.menu;
+        buttons.forEach((b) =>
+          b.setAttribute("aria-expanded", b === btn ? "true" : "false")
+        );
+        groups.forEach((g) => {
+          g.classList.toggle("is-open", g.dataset.prep === id);
+        });
+      });
+    });
+  }
+
+  // ── Widget 2: chefs ─────────────────────────────
+  const chefs = document.querySelector<HTMLElement>("[data-chefs]");
+  if (chefs) {
+    const radios = chefs.querySelectorAll<HTMLInputElement>(
+      "input[name=\"pantry\"]"
+    );
+    const reactions = chefs.querySelectorAll<HTMLElement>(".chef-reaction");
+
+    const apply = (id: string) => {
+      reactions.forEach((r) => {
+        r.classList.toggle("is-active", r.dataset.scenario === id);
+      });
+    };
+
+    apply("perfect");
+    radios.forEach((r) =>
+      r.addEventListener("change", () => apply(r.value))
+    );
+  }
+
+  // ── Widget 3: shop ─────────────────────────────
+  const shop = document.querySelector<HTMLElement>("[data-shop]");
+  if (shop) {
+    const chips = shop.querySelectorAll<HTMLButtonElement>(".shop-chip");
+    const bins = shop.querySelectorAll<HTMLElement>(".shop-bin");
+    const status = shop.querySelector<HTMLElement>("[data-status]");
+    const resetBtn = shop.querySelector<HTMLButtonElement>("[data-reset]");
+    const total = chips.length;
+
+    const reasons: Record<string, string> = {};
+    chips.forEach((chip) => {
+      const id = chip.dataset.id!;
+      const label = chip.querySelector(".chip-label")?.textContent ?? "";
+      const real = chip.querySelector(".chip-real")?.textContent ?? "";
+      reasons[id] = `${label} → ${real}`;
+    });
+    const reasonText: Record<string, string> = {
+      dough: "the customer eats this · runtime needs it",
+      mozz: "shipped in every order · runtime needs it",
+      tomato: "ingredient in the finished dish",
+      cutter: "you use it · the customer never sees it",
+      apron: "developer tool · not in production",
+      types: "types erased at build · dev only",
+      oven: "build infrastructure · stays in the kitchen",
+      plate: "the host already has it · don't ship a second one",
+      wine: "library assumes host has it · avoids duplicate instances",
+      fork: "Vue plugins assume host owns Vue + router",
+    };
+
+    let placed = 0;
+    const counts: Record<string, number> = { food: 0, kitchen: 0, byo: 0 };
+
+    const updateStatus = () => {
+      if (!status) return;
+      status.textContent = `${placed} / ${total} sorted`;
+      if (placed === total) status.classList.add("is-complete");
+    };
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        if (chip.classList.contains("is-placed")) return;
+        const id = chip.dataset.id!;
+        const bin = chip.dataset.bin!;
+        const target = shop.querySelector<HTMLElement>(`.shop-bin[data-bin="${bin}"] [data-items]`);
+        if (!target) return;
+
+        const li = document.createElement("li");
+        li.className = "bin-item";
+        li.innerHTML = `
+          <span class="bin-item-label">${chip.querySelector(".chip-label")?.textContent}</span>
+          <span class="bin-item-real">${chip.querySelector(".chip-real")?.textContent}</span>
+          <span class="bin-item-why">${reasonText[id] ?? ""}</span>
+        `;
+        target.appendChild(li);
+
+        chip.classList.add("is-placed");
+        chip.setAttribute("aria-disabled", "true");
+        counts[bin] += 1;
+        placed += 1;
+        updateStatus();
+      });
+    });
+
+    resetBtn?.addEventListener("click", () => {
+      chips.forEach((c) => {
+        c.classList.remove("is-placed");
+        c.removeAttribute("aria-disabled");
+      });
+      bins.forEach((b) => {
+        const items = b.querySelector<HTMLElement>("[data-items]");
+        if (items) items.innerHTML = "";
+      });
+      placed = 0;
+      counts.food = 0;
+      counts.kitchen = 0;
+      counts.byo = 0;
+      status?.classList.remove("is-complete");
+      updateStatus();
+    });
+
+    updateStatus();
+  }
+</script>
+
+<style>
+  .lab {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: var(--space-3xl) var(--space-l) var(--space-2xl);
+    display: grid;
+    gap: var(--space-3xl);
+  }
+
+  /* ── Nav ─────────────────────────────────────── */
+  .lab-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    padding-bottom: var(--space-m);
+    border-bottom: 1px dashed var(--border);
+  }
+  .lab-back { color: var(--accent); text-decoration: none; transition: color var(--duration-fast) var(--ease-out); }
+  .lab-back:hover, .lab-back:focus-visible { color: var(--text-strong); }
+  .lab-crumb { display: inline-flex; gap: 0.6ch; align-items: baseline; }
+  .crumb-num { color: var(--accent); letter-spacing: 0.05em; }
+  .crumb-name { color: var(--built); }
+  .crumb-name::before { content: "// "; color: var(--border); }
+
+  /* ── Hero ────────────────────────────────────── */
+  .hero { display: grid; gap: var(--space-m); }
+  .hero-eyebrow {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.6ch;
+    align-items: baseline;
+  }
+  .eyebrow-tag {
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 2px 8px;
+    border-radius: var(--radius-s);
+    letter-spacing: 0.06em;
+    text-transform: lowercase;
+  }
+  .eyebrow-sep { color: var(--border); }
+  .hero-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-6);
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    color: var(--text-strong);
+  }
+  .hero-tagline {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--step-1);
+    line-height: 1.5;
+    max-width: 62ch;
+  }
+
+  /* ── Block ───────────────────────────────────── */
+  .block { display: grid; gap: var(--space-l); }
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+    padding-bottom: var(--space-s);
+    border-bottom: 1px dashed var(--border);
+  }
+  .block-num {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .block-title {
+    margin: 0;
+    font-size: var(--step-3);
+    letter-spacing: -0.02em;
+    color: var(--text-strong);
+  }
+  .block-lede {
+    color: var(--text);
+    font-size: var(--step-0);
+    line-height: 1.6;
+    max-width: 72ch;
+    margin: 0;
+  }
+  .block-lede code,
+  .block-takeaway code,
+  .chef-cmd code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+  }
+  .block-lede em,
+  .block-takeaway em {
+    color: var(--text-strong);
+    font-style: normal;
+    border-bottom: 1px dashed rgb(232 163 61 / 0.5);
+    padding-bottom: 1px;
+  }
+
+  /* ── Takeaway ────────────────────────────────── */
+  .block-takeaway {
+    margin: 0;
+    padding: var(--space-m) var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-s);
+    display: flex;
+    gap: var(--space-s);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .takeaway-tag {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--accent);
+    text-transform: lowercase;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  /* ── Widget 1: restaurant ────────────────────── */
+  .restaurant {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: var(--space-m);
+  }
+  .rest-side {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .rest-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--space-s) var(--space-m);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+  .rest-tag { color: var(--built); }
+  .rest-tag::before { content: "▼ "; color: var(--muted); }
+  .rest-meta { color: var(--muted); }
+
+  .menu {
+    list-style: none;
+    padding: var(--space-m);
+    margin: 0;
+    display: grid;
+    gap: var(--space-2xs);
+    flex: 1;
+  }
+  .menu-item {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-s);
+    padding: var(--space-s) var(--space-m);
+    color: var(--text);
+    font-family: var(--font-body);
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: var(--space-s);
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      background var(--duration-fast) var(--ease-out);
+  }
+  .menu-item:hover,
+  .menu-item:focus-visible {
+    border-color: var(--accent);
+    background: var(--surface-2);
+    outline: none;
+  }
+  .menu-item[aria-expanded="true"] {
+    background: rgb(232 163 61 / 0.08);
+    border-color: var(--accent);
+  }
+  .menu-bullet { color: var(--accent); font-size: 0.75em; }
+  .menu-name { color: var(--text-strong); font-size: var(--step-0); }
+  .menu-note {
+    color: var(--muted);
+    font-size: var(--step--1);
+    font-family: var(--font-mono);
+  }
+
+  .prep {
+    padding: var(--space-m);
+    flex: 1;
+    display: grid;
+    gap: var(--space-s);
+    align-content: start;
+  }
+  .prep-group {
+    display: none;
+    animation: prep-in 280ms var(--ease-out);
+  }
+  .prep-group.is-open { display: block; }
+  @keyframes prep-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .prep-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: var(--space-2xs);
+    margin-bottom: var(--space-xs);
+    border-bottom: 1px dashed var(--border);
+  }
+  .prep-name {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    color: var(--text-strong);
+    letter-spacing: -0.01em;
+  }
+  .prep-count {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--accent);
+  }
+  .prep-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3xs);
+  }
+  .prep-step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-xs);
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    padding-left: var(--space-s);
+  }
+  .prep-branch { color: var(--built); }
+
+  .rest-foot {
+    margin: 0;
+    padding: var(--space-s) var(--space-m);
+    border-top: 1px dashed var(--border);
+    background: rgb(13 19 21 / 0.4);
+    display: flex;
+    gap: 0.6ch;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+  .rest-stat-num {
+    color: var(--accent);
+    font-size: var(--step-1);
+    font-family: var(--font-display);
+  }
+  .rest-stat-label { color: var(--muted); }
+
+  /* ── Widget 2: chefs ─────────────────────────── */
+  .chefs {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .scenario-picker {
+    display: grid;
+    gap: var(--space-2xs);
+  }
+  .scenario {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-s);
+    padding: var(--space-s) var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    transition: border-color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+  }
+  .scenario input { position: absolute; opacity: 0; pointer-events: none; }
+  .scenario-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    position: relative;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+  .scenario-dot::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    background: var(--accent);
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+  .scenario input:checked + .scenario-dot {
+    border-color: var(--accent);
+  }
+  .scenario input:checked + .scenario-dot::after {
+    transform: scale(1);
+  }
+  .scenario:hover { border-color: var(--accent); }
+  .scenario:has(input:checked) {
+    border-color: var(--accent);
+    background: rgb(232 163 61 / 0.06);
+  }
+
+  .chef-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-m);
+  }
+  .chef {
+    padding: var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    display: grid;
+    gap: var(--space-m);
+    align-content: start;
+  }
+  .chef-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: var(--space-s);
+    border-bottom: 1px dashed var(--border);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+  .chef-role {
+    color: var(--accent);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+  .chef-cmd { color: var(--muted); }
+  .chef-desc {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+    font-size: var(--step--1);
+  }
+
+  .chef-reaction {
+    display: none;
+    padding: var(--space-m);
+    background: var(--bg);
+    border-radius: var(--radius-s);
+    border-left: 3px solid var(--border);
+    gap: var(--space-s);
+    align-items: flex-start;
+  }
+  .chef-reaction.is-active { display: flex; }
+  .reaction-ok { border-left-color: var(--built); }
+  .reaction-ok-warn { border-left-color: var(--accent); }
+  .reaction-fail { border-left-color: var(--error); }
+
+  .reaction-glyph {
+    font-family: var(--font-mono);
+    font-size: var(--step-1);
+    flex-shrink: 0;
+    line-height: 1;
+    padding-top: 4px;
+  }
+  .reaction-ok .reaction-glyph { color: var(--built); }
+  .reaction-ok-warn .reaction-glyph { color: var(--accent); }
+  .reaction-fail .reaction-glyph { color: var(--error); }
+
+  .reaction-quote {
+    margin: 0;
+    color: var(--text-strong);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .reaction-fail .reaction-quote { color: var(--error); }
+
+  /* ── Widget 3: shop ──────────────────────────── */
+  .shop {
+    display: grid;
+    gap: var(--space-m);
+  }
+  .shop-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    padding: var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+  }
+  .shop-chip {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: var(--space-xs) var(--space-s);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-s);
+    font-family: var(--font-mono);
+    cursor: pointer;
+    text-align: left;
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      opacity var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out);
+  }
+  .shop-chip:hover:not(.is-placed),
+  .shop-chip:focus-visible:not(.is-placed) {
+    border-color: var(--accent);
+    background: var(--surface-2);
+    outline: none;
+    transform: translateY(-1px);
+  }
+  .chip-label {
+    color: var(--text-strong);
+    font-size: var(--step-0);
+  }
+  .chip-real {
+    color: var(--muted);
+    font-size: var(--step--1);
+  }
+  .chip-real::before {
+    content: "→ ";
+    color: var(--border);
+  }
+  .shop-chip.is-placed {
+    opacity: 0.3;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    text-decoration-color: var(--border);
+  }
+
+  .shop-bins {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-m);
+  }
+  .shop-bin {
+    padding: var(--space-l);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    display: grid;
+    gap: var(--space-s);
+    align-content: start;
+  }
+  .bin-head {
+    display: grid;
+    gap: 2px;
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--border);
+  }
+  .bin-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    letter-spacing: -0.01em;
+    color: var(--text-strong);
+  }
+  .bin-sub {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+  .bin-rule {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .bin-pkg {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 2px 8px;
+    border-radius: var(--radius-s);
+    justify-self: start;
+  }
+
+  .bin-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-2xs);
+  }
+  .bin-item {
+    padding: var(--space-xs) var(--space-s);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+    border-radius: var(--radius-s);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    display: grid;
+    gap: 1px;
+    animation: bin-drop 360ms var(--ease-out);
+  }
+  @keyframes bin-drop {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .bin-item-label { color: var(--text-strong); }
+  .bin-item-real {
+    color: var(--muted);
+    font-size: 0.9em;
+  }
+  .bin-item-real::before {
+    content: "→ ";
+    color: var(--border);
+  }
+  .bin-item-why {
+    color: var(--built);
+    font-size: 0.85em;
+    margin-top: 2px;
+  }
+
+  .shop-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    padding: var(--space-xs) var(--space-m);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-s);
+  }
+  .shop-status-text.is-complete { color: var(--built); }
+  .shop-reset {
+    color: var(--accent);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
+  }
+  .shop-reset:hover, .shop-reset:focus-visible { color: var(--text-strong); outline: none; }
+
+  /* ── Footer ──────────────────────────────────── */
+  .lab-footer {
+    padding-top: var(--space-l);
+    border-top: 1px dashed var(--border);
+    display: grid;
+    gap: var(--space-s);
+  }
+  .lab-back-foot {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+  .lab-foot-meta {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+  .lab-foot-link {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .lab-foot-link:hover, .lab-foot-link:focus-visible { color: var(--text-strong); }
+
+  /* ── Mobile ──────────────────────────────────── */
+  @media (max-width: 760px) {
+    .lab { padding: var(--space-2xl) var(--space-m); gap: var(--space-2xl); }
+    .restaurant,
+    .chef-grid,
+    .shop-bins {
+      grid-template-columns: 1fr;
+    }
+    .hero-title { font-size: var(--step-5); }
+
+    .block-head {
+      flex-wrap: wrap;
+      gap: var(--space-2xs) var(--space-s);
+    }
+
+    .block-title {
+      font-size: var(--step-2);
+    }
+
+    /* takeaway tag was hogging width on the left of a flex row */
+    .block-takeaway {
+      flex-direction: column;
+      gap: var(--space-2xs);
+      padding: var(--space-m);
+    }
+
+    .takeaway-tag {
+      padding-top: 0;
+    }
+
+    /* reaction quote needed room */
+    .chef-reaction {
+      padding: var(--space-s) var(--space-m);
+    }
+
+    /* shop items wrap cleanly on small viewports */
+    .shop-items {
+      padding: var(--space-s);
+      gap: var(--space-3xs);
+    }
+
+    .shop-chip {
+      padding: var(--space-2xs) var(--space-s);
+    }
+
+    /* status row could collide */
+    .shop-status {
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+    }
+
+    /* prep-head was a 2-col flex that pinched the count on small widths */
+    .prep-head {
+      flex-wrap: wrap;
+      gap: var(--space-3xs);
+    }
+
+    .menu-item {
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+    }
+
+    .menu-note {
+      grid-column: 1 / -1;
+      padding-left: 1.4em;
+    }
+  }
+</style>
