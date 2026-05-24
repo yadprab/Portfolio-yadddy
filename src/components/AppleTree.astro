@@ -136,7 +136,7 @@ const kept = [
     hidden
     aria-label="Enable shake detection and physically shake your phone to tree-shake"
   >
-    <span class="atree-shake-icon" aria-hidden="true">📱</span>
+    <span class="atree-shake-icon" aria-hidden="true">≈</span>
     <span class="atree-shake-label" data-shake-label>enable shake</span>
   </button>
 </figure>
@@ -400,7 +400,9 @@ const kept = [
   }
 
   .atree-shake-icon {
-    font-size: 1.05em;
+    color: var(--accent);
+    font-size: 1.1em;
+    line-height: 1;
   }
 
   @media (prefers-reduced-motion: reduce) {
