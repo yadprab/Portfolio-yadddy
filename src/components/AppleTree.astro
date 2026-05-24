@@ -1,0 +1,261 @@
+---
+const falling = [
+  { id: "team-player", x: 245, y: 195, rot: 18 },
+  { id: "rockstar", x: 228, y: 160, rot: -14 },
+  { id: "ninja", x: 358, y: 198, rot: 24 },
+  { id: "passionate", x: 370, y: 162, rot: -22 },
+  { id: "guru", x: 300, y: 235, rot: 8 },
+  { id: "self-starter", x: 280, y: 125, rot: -28 },
+  { id: "wears-many-hats", x: 332, y: 128, rot: 16 },
+  { id: "pixel-perfectionist", x: 390, y: 222, rot: -18 },
+];
+
+const kept = [
+  { id: "ships", x: 268, y: 180 },
+  { id: "measurable", x: 318, y: 152 },
+  { id: "specific", x: 218, y: 212 },
+];
+---
+
+<figure
+  class="apple-tree"
+  role="img"
+  aria-label="An apple tree being shaken — eight buzzword apples fall as you scroll, three signal apples stay on the branches."
+>
+  <svg viewBox="0 0 600 560" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <radialGradient id="atree-canopy" cx="50%" cy="40%" r="62%">
+        <stop offset="0%" stop-color="rgb(79 140 126 / 0.10)" />
+        <stop offset="100%" stop-color="rgb(79 140 126 / 0)" />
+      </radialGradient>
+      <linearGradient id="atree-trunk" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%" stop-color="#3a2d22" />
+        <stop offset="100%" stop-color="#1f1812" />
+      </linearGradient>
+      <filter id="apple-shine" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="1.2" />
+      </filter>
+    </defs>
+
+    <!-- Ground shadow -->
+    <ellipse cx="300" cy="500" rx="150" ry="6" fill="#000" opacity="0.45" />
+
+    <!-- Trunk -->
+    <path
+      class="atree-trunk-shape"
+      d="M 292 500
+         C 286 430, 290 380, 296 340
+         L 304 340
+         C 310 380, 314 430, 308 500 Z"
+      fill="url(#atree-trunk)"
+      stroke="#1e2a2d"
+      stroke-width="1"
+    />
+
+    <!-- Branches reaching into canopy -->
+    <g class="atree-branches" fill="none" stroke="#1e2a2d" stroke-linecap="round">
+      <path d="M 300 330 C 278 308, 250 286, 215 268" stroke-width="2.2" />
+      <path d="M 304 322 C 340 296, 366 282, 388 268" stroke-width="2.2" />
+      <path d="M 302 295 C 300 252, 300 230, 300 195" stroke-width="1.8" />
+      <path d="M 286 300 C 268 270, 252 246, 232 230" stroke-width="1.4" />
+      <path d="M 314 300 C 332 270, 348 246, 368 230" stroke-width="1.4" />
+    </g>
+
+    <!-- Canopy -->
+    <g class="atree-canopy">
+      <ellipse
+        cx="300"
+        cy="188"
+        rx="138"
+        ry="102"
+        fill="url(#atree-canopy)"
+        stroke="rgb(79 140 126 / 0.55)"
+        stroke-width="1.25"
+      />
+      <circle cx="240" cy="160" r="22" fill="rgb(79 140 126 / 0.04)" />
+      <circle cx="350" cy="170" r="28" fill="rgb(79 140 126 / 0.04)" />
+      <circle cx="290" cy="128" r="20" fill="rgb(79 140 126 / 0.04)" />
+      <circle cx="380" cy="200" r="18" fill="rgb(79 140 126 / 0.04)" />
+    </g>
+
+    <!-- Falling apples (red · the buzzwords) -->
+    {falling.map((a, i) => (
+      <g
+        class="apple apple-fall"
+        data-id={a.id}
+        style={`--x: ${a.x}; --y: ${a.y}; --rot: ${a.rot}deg; --i: ${i};`}
+      >
+        <line
+          x1={a.x}
+          y1={a.y - 7}
+          x2={a.x + 1}
+          y2={a.y - 12}
+          stroke="rgb(120 120 120 / 0.7)"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+        <circle cx={a.x} cy={a.y} r="7" fill="var(--error)" stroke="rgb(0 0 0 / 0.35)" stroke-width="0.5" />
+        <circle cx={a.x - 2} cy={a.y - 2} r="1.6" fill="rgb(255 255 255 / 0.3)" filter="url(#apple-shine)" />
+      </g>
+    ))}
+
+    <!-- Kept apples (amber · the survivors) -->
+    {kept.map((a, i) => (
+      <g
+        class="apple apple-keep"
+        data-id={a.id}
+        style={`--x: ${a.x}; --y: ${a.y}; --i: ${i};`}
+      >
+        <line
+          x1={a.x}
+          y1={a.y - 7}
+          x2={a.x + 1}
+          y2={a.y - 12}
+          stroke="rgb(140 130 110 / 0.8)"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+        <circle cx={a.x} cy={a.y} r="7.5" fill="var(--accent)" />
+        <circle cx={a.x - 2} cy={a.y - 2} r="1.8" fill="rgb(255 255 255 / 0.45)" filter="url(#apple-shine)" />
+      </g>
+    ))}
+  </svg>
+
+  <figcaption class="atree-caption">
+    <span class="atree-caption-num">8</span> fall
+    <span class="atree-sep" aria-hidden="true">·</span>
+    <span class="atree-caption-num atree-kept">3</span> stay
+    <span class="atree-sep" aria-hidden="true">·</span>
+    <span class="atree-caption-muted">scroll to shake</span>
+  </figcaption>
+</figure>
+
+<style>
+  .apple-tree {
+    margin: 0;
+    display: grid;
+    place-items: center;
+    gap: var(--space-s);
+    padding: var(--space-m) 0 var(--space-l);
+  }
+
+  .apple-tree svg {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+
+  .atree-caption {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--text);
+    display: inline-flex;
+    gap: 0.6ch;
+    align-items: baseline;
+  }
+
+  .atree-caption-num {
+    color: var(--error);
+  }
+
+  .atree-caption-num.atree-kept {
+    color: var(--accent);
+  }
+
+  .atree-sep {
+    color: var(--border);
+  }
+
+  .atree-caption-muted {
+    color: var(--muted);
+  }
+
+  /* Canopy gentle sway */
+  .atree-canopy {
+    transform-origin: 300px 290px;
+    transform-box: view-box;
+    animation: atree-sway 7s var(--ease-in-out) infinite;
+  }
+
+  .atree-branches {
+    transform-origin: 300px 330px;
+    transform-box: view-box;
+    animation: atree-sway 7s var(--ease-in-out) infinite;
+  }
+
+  @keyframes atree-sway {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(0.5deg); }
+  }
+
+  /* Apples: rotation pivots at the stem (slightly above the apple center) */
+  .apple {
+    transform-origin: calc(var(--x) * 1px) calc(var(--y) * 1px - 12px);
+    transform-box: view-box;
+  }
+
+  /* Falling apples — timer-based fallback for browsers without animation-timeline */
+  .apple-fall {
+    animation: apple-fall 1300ms var(--ease-out) forwards;
+    animation-delay: calc(2400ms + var(--i) * 140ms);
+  }
+
+  /* Scroll-driven version (preferred) */
+  @supports (animation-timeline: view()) {
+    .apple-fall {
+      animation: apple-fall linear both;
+      animation-timeline: view();
+      animation-range: cover calc(18% + var(--i) * 4%) cover calc(42% + var(--i) * 4%);
+      animation-delay: 0ms;
+    }
+  }
+
+  @keyframes apple-fall {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+    60% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(360px) rotate(var(--rot));
+      opacity: 0;
+    }
+  }
+
+  /* Kept apples — subtle glow + breathing */
+  .apple-keep circle:nth-child(2) {
+    filter: drop-shadow(0 0 5px rgb(232 163 61 / 0.55));
+  }
+
+  .apple-keep {
+    animation: apple-breathe 4.5s var(--ease-in-out) infinite;
+    animation-delay: calc(var(--i) * 900ms);
+  }
+
+  @keyframes apple-breathe {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .atree-canopy,
+    .atree-branches,
+    .apple-keep {
+      animation: none;
+    }
+    .apple-fall {
+      animation: none;
+      opacity: 0.3;
+    }
+  }
+
+  @media (max-width: 540px) {
+    .apple-tree svg {
+      max-width: 340px;
+    }
+  }
+</style>
