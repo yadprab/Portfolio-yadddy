@@ -152,6 +152,38 @@ const kept = [
   const label = root?.querySelector<HTMLElement>("[data-shake-label]");
   const hint = root?.querySelector<HTMLElement>("[data-default-hint]");
 
+  // Shared shake trigger — used by gesture, IO fallback, anything else
+  const shakeTree = () => {
+    if (!svg) return;
+    svg.classList.remove("tree-shaken");
+    void svg.offsetWidth;
+    svg.classList.add("tree-shaken");
+  };
+
+  // Browsers without animation-timeline (Firefox today) need an IntersectionObserver
+  // fallback so apples fall WHEN the user reaches the section, not on page load.
+  if (root && svg) {
+    const supportsScrollTimeline =
+      typeof CSS !== "undefined" &&
+      typeof CSS.supports === "function" &&
+      CSS.supports("animation-timeline", "view()");
+
+    if (!supportsScrollTimeline) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              window.setTimeout(shakeTree, 400);
+              io.disconnect();
+            }
+          }
+        },
+        { threshold: 0.3 }
+      );
+      io.observe(svg);
+    }
+  }
+
   if (root && svg && btn && label && typeof DeviceMotionEvent !== "undefined") {
     const isTouch =
       "ontouchstart" in window ||
@@ -174,10 +206,7 @@ const kept = [
     let last = { x: 0, y: 0, z: 0, t: 0 };
 
     const triggerShake = () => {
-      svg.classList.remove("tree-shaken");
-      // re-trigger by forcing reflow
-      void svg.offsetWidth;
-      svg.classList.add("tree-shaken");
+      shakeTree();
       if (hint) hint.textContent = "shaken";
       label.textContent = "shake again";
     };
@@ -293,19 +322,19 @@ const kept = [
     transform-box: view-box;
   }
 
-  /* Falling apples — timer-based fallback for browsers without animation-timeline */
+  /* Falling apples — sit on the tree until something triggers the fall:
+     · scroll-driven via animation-timeline (Chrome/Safari)
+     · IntersectionObserver fallback (Firefox · added by script)
+     · DeviceMotionEvent shake (any touch device) */
   .apple-fall {
-    animation: apple-fall 1300ms var(--ease-out) forwards;
-    animation-delay: calc(2400ms + var(--i) * 140ms);
+    opacity: 1;
   }
 
-  /* Scroll-driven version (preferred) */
   @supports (animation-timeline: view()) {
     .apple-fall {
       animation: apple-fall linear both;
       animation-timeline: view();
       animation-range: cover calc(18% + var(--i) * 4%) cover calc(42% + var(--i) * 4%);
-      animation-delay: 0ms;
     }
   }
 
