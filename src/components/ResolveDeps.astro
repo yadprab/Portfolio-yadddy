@@ -277,16 +277,26 @@ const total = skills.length + projects.length + meta.length;
     }
 
     .file {
-      grid-template-columns: auto auto auto;
-      grid-template-rows: auto auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0 0.5ch;
+      row-gap: 1px;
+    }
+
+    .fname,
+    .fext {
+      flex: 0 0 auto;
     }
 
     .fnote {
-      grid-column: 2 / -1;
-      padding-left: 0;
+      flex: 1 0 100%;
+      padding-left: 1.6em;
       margin-left: 0;
       border-left: 0;
       color: var(--muted);
+      font-size: var(--step--1);
+      opacity: 0.85;
     }
   }
 </style>
