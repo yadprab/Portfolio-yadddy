@@ -1,0 +1,182 @@
+---
+---
+
+<div class="mesh-bg" data-mesh aria-hidden="true">
+  <div class="mesh-base"></div>
+  <div class="mesh-bright"></div>
+  <div class="mesh-glow"></div>
+</div>
+
+<script>
+  const mesh = document.querySelector<HTMLElement>("[data-mesh]");
+  if (mesh) {
+    const supportsHover = window.matchMedia("(hover: hover)").matches;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (supportsHover && !reducedMotion) {
+      // Initial center
+      let targetX = window.innerWidth / 2;
+      let targetY = window.innerHeight / 2;
+      let currentX = targetX;
+      let currentY = targetY;
+      let rafId = 0;
+
+      const update = (e: PointerEvent) => {
+        targetX = e.clientX;
+        targetY = e.clientY;
+        if (!rafId) rafId = requestAnimationFrame(animate);
+      };
+
+      const animate = () => {
+        // Lerp toward target — gives the spotlight a buttery follow,
+        // not a snap. 0.12 = slower / more luxurious; 0.25 = snappy.
+        currentX += (targetX - currentX) * 0.14;
+        currentY += (targetY - currentY) * 0.14;
+
+        mesh.style.setProperty("--mx", `${currentX}px`);
+        mesh.style.setProperty("--my", `${currentY}px`);
+
+        const dx = Math.abs(targetX - currentX);
+        const dy = Math.abs(targetY - currentY);
+        if (dx > 0.3 || dy > 0.3) {
+          rafId = requestAnimationFrame(animate);
+        } else {
+          rafId = 0;
+        }
+      };
+
+      window.addEventListener("pointermove", update, { passive: true });
+      // Prime once so the spotlight is visible before first pointer move
+      mesh.style.setProperty("--mx", `${currentX}px`);
+      mesh.style.setProperty("--my", `${currentY}px`);
+    }
+  }
+</script>
+
+<style is:global>
+  /* Body must allow the fixed mesh to show through — html stays opaque as fallback */
+  body {
+    background: transparent !important;
+  }
+</style>
+
+<style>
+  .mesh-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+    /* Anchor for cursor coordinates */
+    --mx: 50vw;
+    --my: 50vh;
+  }
+
+  /* Animated radii — pulse like breathing for the "wave" feel */
+  @property --bright-r {
+    syntax: "<length>";
+    initial-value: 260px;
+    inherits: false;
+  }
+
+  @property --glow-r {
+    syntax: "<length>";
+    initial-value: 380px;
+    inherits: false;
+  }
+
+  /* Layer 1 · faint dot grid everywhere — slow diagonal drift */
+  .mesh-base {
+    position: absolute;
+    inset: -32px;
+    background-image: radial-gradient(
+      circle at center,
+      rgb(255 255 255 / 0.08) 1px,
+      transparent 1.5px
+    );
+    background-size: 32px 32px;
+    animation: dot-drift 18s linear infinite;
+  }
+
+  @keyframes dot-drift {
+    from { background-position: 0 0; }
+    to { background-position: 32px 32px; }
+  }
+
+  /* Layer 2 · brighter dot grid, masked to a soft disc around the cursor.
+     Mask radius pulses (260px → 320px → 260px) — the wave you see. */
+  .mesh-bright {
+    position: absolute;
+    inset: -32px;
+    background-image: radial-gradient(
+      circle at center,
+      var(--accent) 1px,
+      transparent 1.6px
+    );
+    background-size: 32px 32px;
+    opacity: 0.62;
+    -webkit-mask: radial-gradient(
+      circle var(--bright-r) at var(--mx) var(--my),
+      black 0%,
+      rgb(0 0 0 / 0.4) 30%,
+      transparent 75%
+    );
+    mask: radial-gradient(
+      circle var(--bright-r) at var(--mx) var(--my),
+      black 0%,
+      rgb(0 0 0 / 0.4) 30%,
+      transparent 75%
+    );
+    animation:
+      dot-drift 18s linear infinite,
+      bright-pulse 3.4s ease-in-out infinite;
+  }
+
+  @keyframes bright-pulse {
+    0%, 100% { --bright-r: 240px; }
+    50%      { --bright-r: 320px; }
+  }
+
+  /* Layer 3 · ambient color spill — also breathes, slightly offset phase
+     so the layers don't move in lockstep */
+  .mesh-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle var(--glow-r) at var(--mx) var(--my),
+      rgb(232 163 61 / 0.08) 0%,
+      rgb(79 140 126 / 0.04) 35%,
+      transparent 70%
+    );
+    animation: glow-pulse 4.6s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { --glow-r: 340px; }
+    50%      { --glow-r: 440px; }
+  }
+
+  /* Touch / reduced-motion: kill the cursor spotlight + freeze drift */
+  @media (hover: none), (prefers-reduced-motion: reduce) {
+    .mesh-bright,
+    .mesh-glow {
+      display: none;
+    }
+    .mesh-base {
+      animation: none;
+      background-image: radial-gradient(
+        circle at center,
+        rgb(255 255 255 / 0.06) 1px,
+        transparent 1.5px
+      );
+    }
+  }
+
+  @media (max-width: 540px) {
+    .mesh-base {
+      background-size: 28px 28px;
+    }
+  }
+</style>

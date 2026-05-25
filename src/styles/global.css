@@ -36,6 +36,81 @@ html {
   scroll-margin-top: 72px;
 }
 
+/* ─── Page glitch transition (used by play-build CTA) ──────────────── */
+.page-glitching {
+  animation: page-glitch 700ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  overflow: hidden;
+}
+
+.page-glitching::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 2px,
+    rgb(232 163 61 / 0.08) 2px,
+    rgb(232 163 61 / 0.08) 3px
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: scanlines 200ms linear infinite;
+}
+
+.page-glitching::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 48%,
+      rgb(232 163 61 / 0.35) 49%,
+      rgb(232 163 61 / 0.35) 51%,
+      transparent 52%,
+      transparent 100%
+    );
+  pointer-events: none;
+  animation: glitch-bar 620ms steps(20, end) forwards;
+  mix-blend-mode: screen;
+}
+
+@keyframes page-glitch {
+  /* No screen-shake transforms — just color/filter drama */
+  0%   { filter: none; }
+  18%  { filter: hue-rotate(28deg) saturate(1.6) brightness(1.08); }
+  34%  { filter: hue-rotate(-22deg) brightness(1.18) contrast(1.25); }
+  50%  { filter: invert(0.06) brightness(0.92); }
+  66%  { filter: hue-rotate(14deg) saturate(0.4); }
+  82%  { filter: brightness(1.25) contrast(1.4); }
+  92%  { filter: brightness(0.5); opacity: 0.55; }
+  100% { filter: brightness(0); opacity: 0; }
+}
+
+@keyframes scanlines {
+  from { background-position: 0 0; }
+  to   { background-position: 0 6px; }
+}
+
+@keyframes glitch-bar {
+  0%   { transform: translateY(-120vh); opacity: 0; }
+  20%  { transform: translateY(-30vh); opacity: 1; }
+  60%  { transform: translateY(40vh); opacity: 1; }
+  100% { transform: translateY(120vh); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-glitching,
+  .page-glitching::before,
+  .page-glitching::after {
+    animation: none !important;
+  }
+}
+
 body {
   background: var(--bg);
   color: var(--text);

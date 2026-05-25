@@ -1,0 +1,860 @@
+---
+import Layout from "~/layouts/Layout.astro";
+
+// Each phase: name, log lines (with relative delays in ms), explainer body
+const phases = [
+  {
+    id: "config",
+    name: "reading config",
+    cmd: "vite v6.4.2 building for production…",
+    lines: [
+      { t: 0, text: "▸ loading vite.config.mts" },
+      { t: 320, text: "✓ env loaded (production)" },
+      { t: 240, text: "✓ 8 plugins registered" },
+      { t: 200, text: "  · react-swc · tsconfigPaths · preserveDirectives" },
+      { t: 200, text: "  · cdnPreconnectPlugin · asyncCssPlugin" },
+    ],
+    explainer: {
+      title: "Build starts from a contract",
+      body: "vite.config.mts is the contract — what plugins run, in what order, what env values are injected, how output chunks are named. Loaded once, frozen, applied to every module that follows. Production mode swaps the env file (env/.env.production), enables minification, strips dev-only code.",
+    },
+  },
+  {
+    id: "entry",
+    name: "resolving entry point",
+    lines: [
+      { t: 0, text: "▸ src/index.tsx" },
+      { t: 280, text: "✓ resolved" },
+      { t: 200, text: "▸ walking imports" },
+    ],
+    explainer: {
+      title: "Everything starts from one file",
+      body: "src/index.tsx is the root. Vite follows its imports, then those imports' imports, transitively. Anything not reachable from src/index.tsx will not ship — that's how dead code never makes the bundle. The entry point is also the only thing that CAN'T be code-split: it's loaded immediately by index.html.",
+    },
+  },
+  {
+    id: "graph",
+    name: "building module graph",
+    lines: [
+      { t: 0, text: "▸ resolving npm specifiers" },
+      { t: 300, text: "✓ react@^18.2.0     → 18.2.45" },
+      { t: 80, text: "✓ typescript@5.7.2  → 5.7.2" },
+      { t: 80, text: "✓ ag-grid-react     → 30.2.1" },
+      { t: 80, text: "✓ @tiptap/core      → 2.0.0-beta.196" },
+      { t: 80, text: "✓ @sinecycle/growcomponents → 4.0.0-beta.6" },
+      { t: 80, text: "✓ +1,242 more transitive deps" },
+      { t: 280, text: "✓ 1,247 modules · 22 circular (0 fatal)" },
+    ],
+    explainer: {
+      title: "Wishes become receipts",
+      body: "package.json declares loose ranges: <code>^18.2.0</code> means \"anything compatible with 18.2.0\". The lockfile pins exact versions: <code>18.2.45</code>. Two engineers running install on different days get the exact same bytes because the lockfile rules over the wishlist. Circular dependencies aren't fatal — Vite tolerates them, but they prevent some optimizations.",
+      link: { label: "deeper · /lab/deps", href: "/lab/deps" },
+    },
+  },
+  {
+    id: "transform",
+    name: "transforming",
+    lines: [
+      { t: 0, text: "▸ swc transform" },
+      { t: 240, text: "  jsx → js · 184 files" },
+      { t: 180, text: "  typescript → js · 312 files" },
+      { t: 200, text: "▸ css modules · 14 stylesheets" },
+      { t: 180, text: "▸ tsconfigPaths · @lib/* @utils/* rewritten" },
+      { t: 240, text: "✓ 1,247 modules transformed" },
+    ],
+    explainer: {
+      title: "Source → JS, in parallel",
+      body: "Each file gets transformed by the plugin chain. SWC (Rust) handles JSX and TypeScript stripping — 20× faster than Babel at this scale. CSS Modules generate scoped class names so styles don't leak across components. <code>tsconfigPaths</code> rewrites <code>@lib/components</code> back to relative paths the bundler understands. All of this happens in parallel — Vite uses every CPU core.",
+    },
+  },
+  {
+    id: "treeshake",
+    name: "tree shaking",
+    lines: [
+      { t: 0, text: "▸ rollup analyzing exports" },
+      { t: 320, text: "  184 unused exports eliminated" },
+      { t: 200, text: "  91 sideEffect-free packages pruned aggressively" },
+      { t: 240, text: "✓ tree shaken · 7.6 MB removed from initial load" },
+    ],
+    explainer: {
+      title: "If you don't use it, it doesn't ship",
+      body: "Rollup walks the export graph and removes any exported function/class/const that no module imports. Packages marked <code>\"sideEffects\": false</code> in their package.json get even more aggressive treatment — entire files can be elided. This is where the 78% initial-load reduction at Growfin came from: ruthless tree-shaking of @ant-design/icons (we used 40 of 4,000), date-fns (specific imports vs the whole library), and lodash → lodash-es.",
+    },
+  },
+  {
+    id: "split",
+    name: "code splitting · manualChunks",
+    lines: [
+      { t: 0, text: "▸ applying manualChunks strategy" },
+      { t: 220, text: "  vendor              · node_modules generic" },
+      { t: 120, text: "  lib-tiptap          · @tiptap/* + prosemirror" },
+      { t: 120, text: "  lib-ag-grid         · ag-grid-* family" },
+      { t: 120, text: "  lib-growcomponents  · @sinecycle/growcomponents" },
+      { t: 120, text: "  lib-monitoring      · @sentry/*" },
+      { t: 120, text: "  lib-analytics       · mixpanel + logrocket" },
+      { t: 120, text: "  lib-realtime        · pusher-js" },
+      { t: 280, text: "✓ 80 chunks emitted" },
+    ],
+    explainer: {
+      title: "Many small files load faster than one big file",
+      body: "Browsers can fetch chunks in parallel and cache them independently. Splitting lets a page that uses tiptap pay only for tiptap; a page that doesn't, doesn't load it. The strategy here groups related libraries — when a tiptap update lands, only <code>lib-tiptap</code>'s hash changes; vendor stays cached. This single-file → many-files transformation is the heart of the −78% gzipped initial load win.",
+    },
+  },
+  {
+    id: "minify",
+    name: "minification",
+    lines: [
+      { t: 0, text: "▸ esbuild minify · pass 1" },
+      { t: 200, text: "  identifiers shortened · drop_console · dead code removal" },
+      { t: 200, text: "  20.86 MB → 13.95 MB raw" },
+      { t: 200, text: "▸ esbuild minify · pass 2 (mangleProps)" },
+      { t: 200, text: "✓ minified · −33% raw" },
+    ],
+    explainer: {
+      title: "Whitespace, comments, long names — all weight without payload",
+      body: "Minification rewrites <code>function getCustomerInvoiceList</code> as <code>function a</code>. Removes every newline, every comment. Folds constant expressions. Inlines functions that are called once. None of it changes behavior; all of it shaves bytes. esbuild's two-pass approach catches what a single pass misses — the second pass can mangle property names safely because the first pass already proved they're not externally referenced.",
+    },
+  },
+  {
+    id: "compress",
+    name: "compression",
+    lines: [
+      { t: 0, text: "▸ gzip · pass on each asset" },
+      { t: 320, text: "  13.95 MB → 4.31 MB · ratio 30.9%" },
+      { t: 220, text: "▸ brotli · q=11 (max compression)" },
+      { t: 320, text: "  13.95 MB → 3.58 MB · ratio 25.7%" },
+      { t: 240, text: "✓ compressed · brotli ships first if browser supports" },
+    ],
+    explainer: {
+      title: "The wire is the bottleneck",
+      body: "Bytes on disk don't matter — bytes over the network do. Gzip is the floor: every modern browser supports it, ~70% reduction on text. Brotli ships in every browser since 2017, gets another ~15% on top. Browsers send <code>Accept-Encoding: br, gzip</code>; servers respond with the best supported. The hierarchy is brotli → gzip → uncompressed, picked at request time.",
+    },
+  },
+  {
+    id: "emit",
+    name: "emit",
+    lines: [
+      { t: 0, text: "▸ writing to ./build/" },
+      { t: 280, text: "  index.html                      2.36 kB" },
+      { t: 100, text: "  assets/app-BDQfhc8-.js         360.48 kB" },
+      { t: 100, text: "  assets/vendor-sS7bxVfd.js     4,728.53 kB" },
+      { t: 100, text: "  assets/lib-tiptap-1_Rmyate.js  538.14 kB" },
+      { t: 100, text: "  assets/lib-growcomponents-…    109.67 kB" },
+      { t: 100, text: "  ... 75 more chunks" },
+      { t: 280, text: "✓ 187 files · written in 4.2s" },
+      { t: 320, text: "" },
+      { t: 100, text: "✓ built in 1m 24s" },
+      { t: 200, text: "✓ initial gzipped transfer · 1.66 MB (−78% vs baseline)" },
+    ],
+    explainer: {
+      title: "Hashed filenames are forever-cache",
+      body: "Every chunk's filename contains a content-hash. <code>app-BDQfhc8-.js</code> is byte-identical to its hash — if the content changes, the hash changes, so the URL changes, so the browser knows to re-fetch. Unchanged chunks stay cached forever — the CDN's <code>Cache-Control: max-age=31536000, immutable</code> header guarantees it. This is why a hotfix on one component invalidates one chunk, not the whole bundle.",
+    },
+  },
+];
+
+const totalLines = phases.reduce((s, p) => s + p.lines.length, 0);
+const totalSteps = phases.length;
+---
+
+<Layout title="yaddy build · running · production">
+  <main class="build">
+    <!-- Minimal terminal session bar — no VS Code chrome -->
+    <header class="session-bar" role="banner">
+      <a class="session-back" href="/" aria-label="back to portfolio">
+        <span aria-hidden="true">◀</span> yaddev
+      </a>
+      <span class="session-prompt">~/yaddev/build</span>
+      <div class="session-status">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span class="status-label" data-status>building…</span>
+      </div>
+    </header>
+
+    <div class="split">
+    <!-- Terminal pane (left) -->
+    <section class="terminal-pane" aria-label="build output">
+      <header class="pane-head">
+        <span class="pane-tag">› build.log</span>
+        <span class="pane-meta">
+          step <span data-step-num>00</span>/{String(totalSteps).padStart(2, "0")}
+          <span class="pane-sep" aria-hidden="true">·</span>
+          <span data-elapsed>0:00</span>
+        </span>
+      </header>
+
+      <div class="terminal-shell">
+        <pre class="terminal-body" data-terminal aria-live="off" role="log"></pre>
+        <input
+          class="gate-input"
+          data-gate-input
+          type="text"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          aria-label="type the secret word to begin"
+        />
+      </div>
+    </section>
+
+    <!-- Explainer pane (bottom) — styled as a second terminal session -->
+    <section class="explainer-pane" aria-label="step explainer">
+      <header class="pane-head">
+        <span class="pane-tag">› cat notes/<span data-step-slug>—</span>.md</span>
+        <span class="pane-meta" data-step-name>—</span>
+      </header>
+
+      <div class="explainer-body" data-explainer>
+        <p class="explainer-empty">
+          <span class="t-prompt">$</span> waiting for build to start…
+        </p>
+      </div>
+    </section>
+    </div>
+
+    <!-- Controls -->
+    <footer class="controls" aria-label="playback controls">
+      <button class="ctrl" type="button" data-prev aria-label="previous step">
+        <span aria-hidden="true">◀◀</span>
+      </button>
+      <button class="ctrl ctrl-primary" type="button" data-toggle aria-label="pause or play">
+        <span aria-hidden="true" data-toggle-icon>▮▮</span>
+        <span class="ctrl-label" data-toggle-label>pause</span>
+      </button>
+      <button class="ctrl" type="button" data-next aria-label="next step">
+        <span aria-hidden="true">▶▶</span>
+      </button>
+      <button class="ctrl" type="button" data-replay aria-label="restart build">
+        <span aria-hidden="true">↻</span>
+        <span class="ctrl-label">replay</span>
+      </button>
+
+      <div class="ctrl-progress" aria-hidden="true">
+        <div class="ctrl-progress-fill" data-progress></div>
+      </div>
+    </footer>
+  </main>
+</Layout>
+
+<script define:vars={{ phases }}>
+  const term = document.querySelector("[data-terminal]");
+  const expl = document.querySelector("[data-explainer]");
+  const stepNum = document.querySelector("[data-step-num]");
+  const stepName = document.querySelector("[data-step-name]");
+  const elapsedEl = document.querySelector("[data-elapsed]");
+  const statusEl = document.querySelector("[data-status]");
+  const progressEl = document.querySelector("[data-progress]");
+  const toggleBtn = document.querySelector("[data-toggle]");
+  const toggleIcon = document.querySelector("[data-toggle-icon]");
+  const toggleLabel = document.querySelector("[data-toggle-label]");
+  const prevBtn = document.querySelector("[data-prev]");
+  const nextBtn = document.querySelector("[data-next]");
+  const replayBtn = document.querySelector("[data-replay]");
+
+  if (!term || !expl) throw new Error("build page missing required nodes");
+
+  /**
+   * State machine:
+   *  - phaseIdx · which phase we're on
+   *  - paused · halt timeline
+   *  - startTs · when this run began (for elapsed clock)
+   */
+  let phaseIdx = 0;
+  let paused = false;
+  let startTs = performance.now();
+  let pauseAccumMs = 0;
+  let pausedAtTs = 0;
+  let timeouts = [];
+
+  const clearTimeouts = () => {
+    timeouts.forEach((t) => clearTimeout(t));
+    timeouts = [];
+  };
+
+  const totalLines = phases.reduce((s, p) => s + p.lines.length, 0);
+
+  const fmtTime = (ms) => {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${m}:${String(s).padStart(2, "0")}`;
+  };
+
+  const elapsed = () => {
+    if (paused) return pausedAtTs - startTs - pauseAccumMs;
+    return performance.now() - startTs - pauseAccumMs;
+  };
+
+  // Live clock tick
+  let clockRaf = 0;
+  const tickClock = () => {
+    if (elapsedEl) elapsedEl.textContent = fmtTime(elapsed());
+    clockRaf = requestAnimationFrame(tickClock);
+  };
+  tickClock();
+
+  const appendLine = (text, kind = "out") => {
+    const span = document.createElement("span");
+    span.className = `t-line t-${kind}`;
+    span.textContent = text === "" ? " " : text;
+    term.appendChild(span);
+    term.scrollTop = term.scrollHeight;
+  };
+
+  const stepSlug = document.querySelector("[data-step-slug]");
+  const renderExplainer = (phase) => {
+    if (!expl) return;
+    let html = `
+      <div class="explainer-line"><span class="t-prompt">#</span> <span class="explainer-title">${phase.explainer.title}</span></div>
+      <p class="explainer-text">${phase.explainer.body}</p>
+    `;
+    if (phase.explainer.link) {
+      html += `<a class="explainer-link" href="${phase.explainer.link.href}">
+        <span aria-hidden="true">→</span> ${phase.explainer.link.label}
+      </a>`;
+    }
+    expl.innerHTML = html;
+    if (stepSlug) stepSlug.textContent = phase.id;
+  };
+
+  const updateProgress = (linesDone) => {
+    if (progressEl) progressEl.style.width = `${(linesDone / totalLines) * 100}%`;
+  };
+
+  // Run a single phase: print header, then lines, then advance
+  const runPhase = (idx, linesPrior = 0) => {
+    if (idx >= phases.length) {
+      statusEl && (statusEl.textContent = "built ✓");
+      if (clockRaf) cancelAnimationFrame(clockRaf);
+      return;
+    }
+    phaseIdx = idx;
+    const phase = phases[idx];
+
+    // Header line
+    appendLine("", "out");
+    appendLine(`[${idx + 1}/${phases.length}] ${phase.name}`, "phase");
+    if (phase.cmd) appendLine(`  ${phase.cmd}`, "muted");
+
+    stepNum && (stepNum.textContent = String(idx + 1).padStart(2, "0"));
+    stepName && (stepName.textContent = phase.name);
+    renderExplainer(phase);
+
+    // Schedule each line
+    let acc = 200;
+    let linesPlayed = 0;
+    phase.lines.forEach((line, i) => {
+      acc += line.t;
+      const id = setTimeout(() => {
+        if (paused) return;
+        appendLine(line.text, /✓|→|·/.test(line.text) ? "ok" : "out");
+        linesPlayed++;
+        updateProgress(linesPrior + linesPlayed);
+        if (i === phase.lines.length - 1) {
+          // Next phase after a short breath
+          const nextId = setTimeout(() => {
+            if (!paused) runPhase(idx + 1, linesPrior + phase.lines.length);
+          }, 700);
+          timeouts.push(nextId);
+        }
+      }, acc);
+      timeouts.push(id);
+    });
+  };
+
+  // Controls
+  toggleBtn?.addEventListener("click", () => {
+    if (paused) {
+      paused = false;
+      pauseAccumMs += performance.now() - pausedAtTs;
+      toggleIcon && (toggleIcon.textContent = "▮▮");
+      toggleLabel && (toggleLabel.textContent = "pause");
+      statusEl && (statusEl.textContent = "building…");
+      // Re-run current phase from current state — simplest correct UX
+      runPhase(phaseIdx, computeLinesPlayedThroughCurrent());
+    } else {
+      paused = true;
+      pausedAtTs = performance.now();
+      clearTimeouts();
+      toggleIcon && (toggleIcon.textContent = "▶");
+      toggleLabel && (toggleLabel.textContent = "resume");
+      statusEl && (statusEl.textContent = "paused");
+    }
+  });
+
+  const computeLinesPlayedThroughCurrent = () => {
+    let n = 0;
+    for (let i = 0; i < phaseIdx; i++) n += phases[i].lines.length;
+    return n;
+  };
+
+  const jumpTo = (newIdx) => {
+    clearTimeouts();
+    paused = false;
+    pauseAccumMs = 0;
+    startTs = performance.now();
+    pausedAtTs = 0;
+    toggleIcon && (toggleIcon.textContent = "▮▮");
+    toggleLabel && (toggleLabel.textContent = "pause");
+    statusEl && (statusEl.textContent = "building…");
+    term.innerHTML = "";
+    appendLine("$ yaddy build --target=production", "cmd");
+    appendLine("", "out");
+    // Render preceding phases instantly
+    let lineCount = 0;
+    for (let i = 0; i < newIdx; i++) {
+      const p = phases[i];
+      appendLine(`[${i + 1}/${phases.length}] ${p.name}`, "phase");
+      if (p.cmd) appendLine(`  ${p.cmd}`, "muted");
+      p.lines.forEach((l) => {
+        appendLine(l.text, /✓|→|·/.test(l.text) ? "ok" : "out");
+        lineCount++;
+      });
+      appendLine("", "out");
+    }
+    runPhase(newIdx, lineCount);
+  };
+
+  prevBtn?.addEventListener("click", () => jumpTo(Math.max(0, phaseIdx - 1)));
+  nextBtn?.addEventListener("click", () =>
+    jumpTo(Math.min(phases.length - 1, phaseIdx + 1))
+  );
+  replayBtn?.addEventListener("click", () => jumpTo(0));
+
+  // ─── Typing gate ──────────────────────────
+  const SECRET = "rabbithole";
+  const gateInput = document.querySelector("[data-gate-input]");
+  const terminalShell = document.querySelector(".terminal-shell");
+  let gateActive = true;
+  let gateTyped = "";
+  let gateError = false;
+
+  const renderGate = () => {
+    term.innerHTML = "";
+    appendLine("# down the rabbit hole", "muted");
+    appendLine(`# type '${SECRET}' to start the build · esc to skip`, "muted");
+    appendLine("", "out");
+    const line = document.createElement("span");
+    line.className = "t-line t-cmd";
+    const typed = gateTyped;
+    const matchedSoFar = SECRET.startsWith(typed.toLowerCase()) && typed.length > 0;
+    const isComplete = typed.toLowerCase() === SECRET;
+    const cls = gateError
+      ? "t-gate-err"
+      : isComplete
+        ? "t-gate-ok"
+        : matchedSoFar
+          ? "t-gate-typing"
+          : typed.length === 0
+            ? ""
+            : "t-gate-typo";
+    line.innerHTML = `<span class="t-prompt">$</span> <span class="${cls}">${typed || ""}</span><span class="t-caret">▮</span>`;
+    term.appendChild(line);
+    if (gateError) {
+      appendLine(`✗ '${typed}' isn't quite right · try again or hit esc`, "err");
+      gateError = false;
+    }
+    if (isComplete) {
+      appendLine("✓ access granted · starting build…", "ok");
+    }
+  };
+
+  const completeGate = () => {
+    if (!gateActive) return;
+    gateActive = false;
+    gateInput?.removeAttribute("autofocus");
+    gateInput?.blur();
+    if (gateInput instanceof HTMLInputElement) gateInput.disabled = true;
+    if (terminalShell) terminalShell.classList.add("is-armed");
+    window.removeEventListener("keydown", onGateKey);
+    // Brief pause, then start the actual build
+    setTimeout(() => {
+      term.innerHTML = "";
+      appendLine("$ yaddy build --target=production", "cmd");
+      setTimeout(() => runPhase(0, 0), 600);
+    }, 800);
+  };
+
+  const onGateKey = (e) => {
+    if (!gateActive) return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      gateTyped = SECRET;
+      renderGate();
+      completeGate();
+      return;
+    }
+  };
+
+  if (gateInput instanceof HTMLInputElement) {
+    gateInput.addEventListener("input", () => {
+      if (!gateActive) return;
+      gateTyped = gateInput.value;
+      // Auto-complete the moment the exact secret is typed
+      if (gateTyped.toLowerCase() === SECRET) {
+        renderGate();
+        completeGate();
+      } else {
+        renderGate();
+      }
+    });
+    gateInput.addEventListener("keydown", (e) => {
+      if (!gateActive) return;
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (gateTyped.toLowerCase() === SECRET) {
+          completeGate();
+        } else {
+          gateError = true;
+          gateTyped = "";
+          gateInput.value = "";
+          renderGate();
+        }
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        gateTyped = SECRET;
+        gateInput.value = SECRET;
+        renderGate();
+        completeGate();
+      }
+    });
+    // Tap anywhere on terminal-pane to focus
+    document.querySelector(".terminal-pane")?.addEventListener("pointerdown", () => {
+      if (gateActive && gateInput) gateInput.focus();
+    });
+    setTimeout(() => gateInput.focus(), 200);
+  }
+  window.addEventListener("keydown", onGateKey);
+
+  renderGate();
+</script>
+
+<style is:global>
+  /* is:global so dynamically inserted .t-line spans pick up the styles.
+     Selectors below are scoped under .build to avoid leaking. */
+  .build {
+    min-height: 100vh;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 0;
+    background: var(--bg);
+  }
+
+  /* Side-by-side: terminal | explainer */
+  .build .split {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ─── Chrome ────────────────────────────── */
+  .chrome {
+    display: flex;
+    align-items: center;
+    gap: var(--space-l);
+    padding: var(--space-xs) var(--space-l);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  .chrome-back {
+    color: var(--accent);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2xs);
+  }
+  .chrome-back:hover, .chrome-back:focus-visible {
+    color: var(--text-strong);
+    outline: none;
+  }
+  .back-arrow {
+    color: var(--muted);
+    font-size: 0.85em;
+  }
+
+  .chrome-tabs {
+    display: flex;
+    gap: var(--space-2xs);
+    align-items: center;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: var(--space-2xs) var(--space-s);
+    color: var(--muted);
+    border-radius: var(--radius-s) var(--radius-s) 0 0;
+    white-space: nowrap;
+  }
+  .tab-active {
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-bottom: 0;
+    margin-bottom: -1px;
+  }
+
+  .chrome-meta {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6ch;
+    color: var(--built);
+  }
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--built);
+    box-shadow: 0 0 8px var(--built-glow);
+    animation: chrome-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes chrome-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+
+  /* ─── Panes ─────────────────────────────── */
+  .terminal-pane,
+  .explainer-pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .terminal-pane {
+    border-right: 1px solid var(--border);
+  }
+
+  .pane-head {
+    padding: var(--space-2xs) var(--space-l);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .pane-tag {
+    color: var(--built);
+  }
+  .pane-tag::before {
+    content: "▼ ";
+    color: var(--muted);
+  }
+  .pane-meta {
+    color: var(--muted);
+  }
+  .pane-sep {
+    margin: 0 0.4ch;
+    color: var(--border);
+  }
+
+  .terminal-shell {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .terminal-body {
+    margin: 0;
+    padding: var(--space-m) var(--space-l);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    line-height: 1.7;
+    color: var(--text);
+    overflow-y: auto;
+    flex: 1;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* Invisible input that absorbs keystrokes and opens mobile keyboard.
+     Caret + text are hidden — the visible "echo" is rendered in the
+     terminal body via JS. */
+  .gate-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: 0;
+    color: transparent;
+    caret-color: transparent;
+    font: inherit;
+    padding: 0;
+    margin: 0;
+    cursor: text;
+    outline: none;
+  }
+  .gate-input::selection { background: transparent; }
+  .terminal-shell.is-armed .gate-input { display: none; }
+
+  .t-gate-typing { color: var(--accent); }
+  .t-gate-ok     { color: var(--built); }
+  .t-gate-typo   { color: var(--error); }
+  .t-gate-err    { color: var(--error); }
+  .t-caret {
+    display: inline-block;
+    color: var(--accent);
+    animation: term-caret 800ms steps(2, end) infinite;
+  }
+  .t-err { color: var(--error); }
+
+  .t-line { display: block; }
+  .t-cmd  { color: var(--text-strong); }
+  .t-cmd::before { content: "$ "; color: var(--accent); }
+  .t-phase { color: var(--accent); margin-top: 0.4em; }
+  .t-ok    { color: var(--built); }
+  .t-muted { color: var(--muted); }
+
+  /* Cursor at end of terminal */
+  .terminal-body::after {
+    content: "▮";
+    display: inline-block;
+    color: var(--accent);
+    animation: term-caret 900ms steps(2, end) infinite;
+    line-height: 1;
+  }
+  @keyframes term-caret {
+    50% { opacity: 0; }
+  }
+
+  /* ─── Explainer ─────────────────────────── */
+  .explainer-body {
+    padding: var(--space-l) var(--space-xl);
+    overflow-y: auto;
+    flex: 1;
+    width: 100%;
+    font-family: var(--font-mono);
+  }
+  .explainer-empty { color: var(--muted); font-family: var(--font-mono); font-size: var(--step--1); }
+  .explainer-title {
+    margin: 0 0 var(--space-s);
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    color: var(--text-strong);
+    letter-spacing: -0.02em;
+  }
+  .explainer-text {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.6;
+    font-size: var(--step-0);
+  }
+  .explainer-text code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    color: var(--accent);
+    background: rgb(232 163 61 / 0.08);
+    padding: 1px 6px;
+    border-radius: var(--radius-s);
+  }
+  .explainer-link {
+    margin-top: var(--space-m);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4ch;
+    color: var(--accent);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    padding: var(--space-2xs) var(--space-s);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-l);
+    transition: color var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
+  }
+  .explainer-link:hover,
+  .explainer-link:focus-visible {
+    color: var(--text-strong);
+    border-color: var(--accent);
+    background: var(--surface);
+    outline: none;
+  }
+
+  /* ─── Controls ──────────────────────────── */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    padding: var(--space-s) var(--space-l);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  .ctrl {
+    padding: var(--space-2xs) var(--space-s);
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5ch;
+    transition: color var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
+  }
+  .ctrl:hover, .ctrl:focus-visible {
+    color: var(--text-strong);
+    border-color: var(--accent);
+    background: var(--surface-2);
+    outline: none;
+  }
+  .ctrl-primary {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .ctrl-progress {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-left: var(--space-s);
+  }
+  .ctrl-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, var(--accent), var(--accent-dim));
+    transition: width 240ms ease;
+  }
+
+  @media (max-width: 880px) {
+    .build .split {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+    .terminal-pane {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .session-bar {
+      gap: var(--space-s);
+      padding: var(--space-xs) var(--space-m);
+    }
+    .session-prompt { display: none; }
+    .terminal-body { padding: var(--space-s) var(--space-m); }
+    .explainer-body { padding: var(--space-m); }
+    .controls { padding: var(--space-s) var(--space-m); flex-wrap: wrap; }
+    .ctrl-progress { order: 99; flex-basis: 100%; margin-left: 0; }
+  }
+</style>
+</Layout>

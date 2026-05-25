@@ -1,5 +1,6 @@
 ---
 import "~/styles/global.css";
+import MeshBackground from "~/components/MeshBackground.astro";
 
 interface Props {
   title?: string;
@@ -31,6 +32,7 @@ const {
     <title>{title}</title>
   </head>
   <body>
+    <MeshBackground />
     <slot />
   </body>
 </html>
