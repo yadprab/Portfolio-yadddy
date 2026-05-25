@@ -14,7 +14,7 @@ const removed = [
 
 const kept = [
   { word: "ships", note: "5+ features in prod" },
-  { word: "measurable", note: "91% bundle, p95 latency" },
+  { word: "measurable", note: "78% gzipped initial load, p95 latency" },
   { word: "specific", note: "cli, design system, federation" },
 ];
 ---
@@ -39,13 +39,13 @@ const kept = [
 
     <div class="ticker-row">
       <div class="ticker-stat">
-        <span class="ticker-stat-label">before</span>
-        <span class="ticker-stat-num"><span class="num-prev">450</span><span class="ticker-unit">kb</span></span>
+        <span class="ticker-stat-label">before · gzipped</span>
+        <span class="ticker-stat-num"><span class="num-prev">7,560</span><span class="ticker-unit">kb</span></span>
       </div>
 
       <div class="ticker-stat ticker-stat-after">
-        <span class="ticker-stat-label">after</span>
-        <span class="ticker-stat-num"><span class="num-curr"><span class="num-static">39</span></span><span class="ticker-unit">kb</span></span>
+        <span class="ticker-stat-label">after · gzipped</span>
+        <span class="ticker-stat-num"><span class="num-curr"><span class="num-static">1,660</span></span><span class="ticker-unit">kb</span></span>
       </div>
     </div>
 
@@ -56,8 +56,8 @@ const kept = [
     </div>
 
     <div class="ticker-delta" aria-live="polite">
-      <span class="ticker-delta-num">−91%</span>
-      <span class="ticker-delta-label">vs prev · production build</span>
+      <span class="ticker-delta-num">−78%</span>
+      <span class="ticker-delta-label">initial-load gzipped · production · growfin</span>
     </div>
   </div>
 
@@ -100,20 +100,20 @@ const kept = [
     <span class="sep" aria-hidden="true">·</span>
     <span class="muted">8 dropped · 3 kept</span>
     <span class="sep" aria-hidden="true">·</span>
-    <span class="muted">−91% size</span>
+    <span class="muted">−78% gzipped</span>
   </footer>
 </section>
 
 <style>
   @property --bundle-now {
     syntax: "<integer>";
-    initial-value: 39;
+    initial-value: 1660;
     inherits: false;
   }
 
   @property --bar-width {
     syntax: "<percentage>";
-    initial-value: 8.67%;
+    initial-value: 21.96%;
     inherits: false;
   }
 
@@ -240,8 +240,8 @@ const kept = [
       content: counter(now);
     }
     @keyframes drop {
-      from { --bundle-now: 450; }
-      to { --bundle-now: 39; }
+      from { --bundle-now: 7560; }
+      to { --bundle-now: 1660; }
     }
   }
 
@@ -259,7 +259,7 @@ const kept = [
 
   .ticker-bar-fill {
     height: 100%;
-    width: 8.67%;
+    width: 21.96%;
     background: linear-gradient(to right, var(--accent), var(--accent-dim));
     border-radius: 2px;
   }
@@ -273,7 +273,7 @@ const kept = [
     }
     @keyframes shrink {
       from { --bar-width: 100%; }
-      to { --bar-width: 8.67%; }
+      to { --bar-width: 21.96%; }
     }
   }
 

@@ -1,22 +1,24 @@
 ---
 const before = [
   { name: "index.html", status: 200, type: "doc", size: "2.1 kB", sizeBytes: 2150, ms: 18, bar: 1 },
-  { name: "main.bundle.js", status: 200, type: "script", size: "16.4 MB", sizeBytes: 16400000, ms: 4820, bar: 100, severe: true },
-  { name: "vendor.js", status: 200, type: "script", size: "890 kB", sizeBytes: 890000, ms: 220, bar: 5 },
-  { name: "styles.css", status: 200, type: "css", size: "112 kB", sizeBytes: 112000, ms: 95, bar: 2 },
+  { name: "vendor.js", status: 200, type: "script", size: "9.73 MB", sizeBytes: 9730000, ms: 3120, bar: 100, severe: true },
+  { name: "cashapps.js", status: 200, type: "script", size: "5.49 MB", sizeBytes: 5490000, ms: 2680, bar: 64, severe: true },
+  { name: "amcharts.js", status: 200, type: "script", size: "2.34 MB", sizeBytes: 2340000, ms: 980, bar: 28 },
+  { name: "main.bundle.js", status: 200, type: "script", size: "1.72 MB", sizeBytes: 1720000, ms: 540, bar: 18 },
 ];
 
 const after = [
-  { name: "index.html", status: 200, type: "doc", size: "1.8 kB", ms: 14, bar: 6 },
-  { name: "main.a3f4b9.js", status: 200, type: "script", size: "39 kB", ms: 44, bar: 28 },
-  { name: "vendor.c812dd.js", status: 200, type: "script", size: "92 kB", ms: 96, bar: 60 },
-  { name: "styles.5f9a1c.css", status: 200, type: "css", size: "8 kB", ms: 22, bar: 14 },
+  { name: "index.html", status: 200, type: "doc", size: "1.8 kB", ms: 14, bar: 1 },
+  { name: "vendor.sS7bxVfd.js", status: 200, type: "script", size: "4.73 MB", ms: 1410, bar: 100 },
+  { name: "lib-tiptap.1_Rmyate.js", status: 200, type: "script", size: "538 kB", ms: 220, bar: 14 },
+  { name: "app.BDQfhc8.js", status: 200, type: "script", size: "360 kB", ms: 140, bar: 9 },
+  { name: "lib-growcomponents.C4d8bmHx.js", status: 200, type: "script", size: "110 kB", ms: 60, bar: 3 },
 ];
 
 const encodings = [
-  { label: "uncompressed", size: "630 kB", bytes: 630, pct: 100 },
-  { label: "gzip", size: "190 kB", bytes: 190, pct: 30, note: "~70% smaller" },
-  { label: "brotli", size: "137 kB", bytes: 137, pct: 22, note: "~78% smaller · default" },
+  { label: "uncompressed", size: "5.74 MB", bytes: 5740, pct: 100 },
+  { label: "gzip", size: "1.66 MB", bytes: 1660, pct: 29, note: "~71% smaller" },
+  { label: "brotli", size: "1.40 MB", bytes: 1400, pct: 24, note: "~76% smaller · default" },
 ];
 ---
 
@@ -61,11 +63,11 @@ const encodings = [
       ))}
 
       <footer class="panel-foot">
-        <span>4 requests</span>
+        <span>7 requests</span>
         <span class="sep" aria-hidden="true">·</span>
-        <span class="bad">17.4 MB transferred</span>
+        <span class="bad">19.4 MB transferred</span>
         <span class="sep" aria-hidden="true">·</span>
-        <span class="bad">5.15 s</span>
+        <span class="bad">5.4 s</span>
       </footer>
     </article>
 
@@ -105,9 +107,9 @@ const encodings = [
       <footer class="panel-foot">
         <span>4 requests</span>
         <span class="sep" aria-hidden="true">·</span>
-        <span class="good">141 kB transferred</span>
+        <span class="good">5.74 MB transferred · gzipped 1.66 MB</span>
         <span class="sep" aria-hidden="true">·</span>
-        <span class="good">176 ms</span>
+        <span class="good">1.5 s</span>
       </footer>
     </article>
   </div>
@@ -140,11 +142,11 @@ const encodings = [
 
   <footer class="footnote">
     <span class="check">✓</span>
-    <span>compression applied</span>
+    <span>code-split + gzip applied</span>
     <span class="sep" aria-hidden="true">·</span>
-    <span class="muted">17.4 MB → 141 kB transferred</span>
+    <span class="muted">19.4 MB → 1.66 MB initial transfer</span>
     <span class="sep" aria-hidden="true">·</span>
-    <span class="muted">−99.2% over the wire</span>
+    <span class="muted">−78% gzipped</span>
   </footer>
 </section>
 

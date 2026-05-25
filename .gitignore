@@ -5,3 +5,8 @@ dist
 .env.production
 .DS_Store
 .vercel
+
+# 3D source-only formats — keep local, don't ship
+public/*.fbx
+public/*.obj
+# bundle-hero.glb IS shipped (opt-in 3D viewer loads it on demand)

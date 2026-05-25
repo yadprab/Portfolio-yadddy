@@ -142,4 +142,28 @@
       padding-left: var(--space-xs);
     }
   }
+
+  /* Tighter still — below 480px hide the build·live word labels.
+     The colored pulsing dot remains as the only status signal. */
+  @media (max-width: 480px) {
+    .label > span:not(.dot),
+    .label-sep,
+    .status {
+      display: none;
+    }
+    .meta {
+      gap: var(--space-2xs);
+    }
+  }
+
+  /* Very small phones (320px range): drop the /labs nav so the brand
+     and dot fit cleanly on one line */
+  @media (max-width: 360px) {
+    .nav-links {
+      display: none;
+    }
+    .bar {
+      padding: var(--space-xs) var(--space-s);
+    }
+  }
 </style>

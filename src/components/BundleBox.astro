@@ -1,162 +1,136 @@
 ---
-const layers = [
-  { id: "top", label: "yaddy.entry", side: "right", note: "12.4 kB", accent: true },
-  { id: "ds", label: "design-systems", side: "left", note: "47 kB" },
-  { id: "dt", label: "devtools", side: "right", note: "39 kB" },
-  { id: "ap", label: "applications", side: "left", note: "54 kB" },
-  { id: "co", label: "brotli + gzip", side: "right", note: "−80%" },
-];
 ---
 
-<figure class="bundle" role="img" aria-label="The portfolio's bundle, visualised as a stack of chunks">
-  <svg
-    class="bundle-svg"
-    viewBox="-110 0 720 420"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-  >
-    <defs>
-      <linearGradient id="top-fill" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="rgb(232 163 61 / 0.22)" />
-        <stop offset="100%" stop-color="rgb(232 163 61 / 0.06)" />
-      </linearGradient>
-      <linearGradient id="top-side" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="rgb(232 163 61 / 0.18)" />
-        <stop offset="100%" stop-color="rgb(232 163 61 / 0.04)" />
-      </linearGradient>
-      <linearGradient id="layer-fill" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#1a2426" />
-        <stop offset="100%" stop-color="#131b1d" />
-      </linearGradient>
-      <filter id="top-glow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="6" result="b" />
-        <feMerge>
-          <feMergeNode in="b" />
-          <feMergeNode in="SourceGraphic" />
-        </feMerge>
-      </filter>
-    </defs>
+<figure
+  class="bundle"
+  role="img"
+  aria-label="The portfolio's bundle, visualised as a stack of layered chunks with the top layer elevated."
+  data-bundle
+>
+  <div class="bundle-frame">
+    <span class="bundle-glow" aria-hidden="true"></span>
 
-    <g class="cube">
-      <!-- TOP LAYER (elevated, amber) -->
-      <g class="layer layer-top" filter="url(#top-glow)">
-        <!-- top face (rhombus) -->
-        <path
-          d="M 260 70 L 380 110 L 260 150 L 140 110 Z"
-          fill="url(#top-fill)"
-          stroke="#e8a33d"
-          stroke-width="1.5"
-          stroke-linejoin="round"
-        />
-        <!-- left side -->
-        <path
-          d="M 140 110 L 260 150 L 260 175 L 140 135 Z"
-          fill="url(#top-side)"
-          stroke="#e8a33d"
-          stroke-width="1.25"
-          stroke-linejoin="round"
-        />
-        <!-- right side -->
-        <path
-          d="M 380 110 L 260 150 L 260 175 L 380 135 Z"
-          fill="rgb(232 163 61 / 0.10)"
-          stroke="#e8a33d"
-          stroke-width="1.25"
-          stroke-linejoin="round"
-        />
-        <!-- center mark -->
-        <text
-          x="260"
-          y="115"
-          text-anchor="middle"
-          fill="#e8a33d"
-          font-family="ui-monospace, monospace"
-          font-size="11"
-          letter-spacing="0.1em"
-        >y</text>
-      </g>
+    <img
+      class="bundle-img"
+      data-bundle-img
+      src="/bundle-hero.webp"
+      alt=""
+      width="1200"
+      height="1200"
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+    />
 
-      <!-- STACK LAYERS (4 below, descending) -->
-      {Array.from({ length: 4 }).map((_, i) => {
-        const yOffset = 195 + i * 28;
-        return (
-          <g class={`layer layer-stack layer-${i + 1}`}>
-            <path
-              d={`M 260 ${yOffset} L 370 ${yOffset + 35} L 260 ${yOffset + 70} L 150 ${yOffset + 35} Z`}
-              fill="url(#layer-fill)"
-              stroke="#1e2a2d"
-              stroke-width="1.25"
-              stroke-linejoin="round"
-            />
-            <path
-              d={`M 150 ${yOffset + 35} L 260 ${yOffset + 70} L 260 ${yOffset + 78} L 150 ${yOffset + 43} Z`}
-              fill="#0a0e0f"
-              stroke="#1e2a2d"
-              stroke-width="1"
-              stroke-linejoin="round"
-            />
-            <path
-              d={`M 370 ${yOffset + 35} L 260 ${yOffset + 70} L 260 ${yOffset + 78} L 370 ${yOffset + 43} Z`}
-              fill="#080b0c"
-              stroke="#1e2a2d"
-              stroke-width="1"
-              stroke-linejoin="round"
-            />
-          </g>
-        );
-      })}
-
-      <!-- CONNECTOR LINES + LABEL PILLS -->
-      {layers.map((l, i) => {
-        const ys = [110, 230, 258, 286, 314];
-        const y = ys[i];
-        const isLeft = l.side === "left";
-        const startX = isLeft ? 150 : 370;
-        const endX = isLeft ? 70 : 450;
-        const labelAnchorX = isLeft ? 60 : 460;
-        return (
-          <g class={`connector ${isLeft ? "conn-left" : "conn-right"} ${l.accent ? "conn-accent" : ""}`}>
-            <line
-              x1={startX}
-              y1={y}
-              x2={endX}
-              y2={y}
-              stroke={l.accent ? "#e8a33d" : "#2a3539"}
-              stroke-width="1"
-              stroke-dasharray="2 4"
-            />
-            <circle
-              cx={startX}
-              cy={y}
-              r="2.5"
-              fill={l.accent ? "#e8a33d" : "#4f8c7e"}
-            />
-            <text
-              x={labelAnchorX}
-              y={y - 4}
-              text-anchor={isLeft ? "end" : "start"}
-              fill={l.accent ? "#e8a33d" : "#e8e1cf"}
-              font-family="ui-monospace, monospace"
-              font-size="10.5"
-            >{l.label}</text>
-            <text
-              x={labelAnchorX}
-              y={y + 10}
-              text-anchor={isLeft ? "end" : "start"}
-              fill="#5c6669"
-              font-family="ui-monospace, monospace"
-              font-size="9.5"
-            >{l.note}</text>
-          </g>
-        );
-      })}
-    </g>
-  </svg>
+    <!-- model-viewer slot is empty until the user opts in -->
+    <div class="bundle-3d" data-bundle-3d aria-hidden="true"></div>
+  </div>
 
   <figcaption class="bundle-caption">
-    the artifact · 5 layers · 39 kB shipped
+    <span class="caption-strong">the artifact</span>
+    <span class="caption-sep" aria-hidden="true">·</span>
+    <span>5 layers</span>
+    <span class="caption-sep" aria-hidden="true">·</span>
+    <span>39 kB shipped</span>
   </figcaption>
+
+  <button
+    class="bundle-3d-toggle"
+    type="button"
+    data-bundle-toggle
+    aria-label="Load the interactive 3D model — adds ~580 KB on demand"
+  >
+    <span class="toggle-icon" aria-hidden="true">▸</span>
+    <span class="toggle-label">rotate in 3D</span>
+    <span class="toggle-meta">+580 kB · on demand</span>
+  </button>
 </figure>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-bundle]");
+  const toggle = root?.querySelector<HTMLButtonElement>("[data-bundle-toggle]");
+  const slot = root?.querySelector<HTMLElement>("[data-bundle-3d]");
+  const img = root?.querySelector<HTMLImageElement>("[data-bundle-img]");
+
+  if (root && toggle && slot && img) {
+    let loaded = false;
+
+    const loadViewer = () =>
+      new Promise<void>((resolve, reject) => {
+        if (customElements.get("model-viewer")) {
+          resolve();
+          return;
+        }
+        const script = document.createElement("script");
+        script.type = "module";
+        script.src =
+          "https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js";
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("model-viewer failed to load"));
+        document.head.appendChild(script);
+      });
+
+    toggle.addEventListener("click", async () => {
+      if (loaded) return;
+      toggle.disabled = true;
+      toggle.classList.add("is-loading");
+      const labelEl = toggle.querySelector<HTMLElement>(".toggle-label");
+      const metaEl = toggle.querySelector<HTMLElement>(".toggle-meta");
+      if (labelEl) labelEl.textContent = "loading 3D…";
+      if (metaEl) metaEl.textContent = "~580 kB · once";
+
+      try {
+        await loadViewer();
+
+        const viewer = document.createElement("model-viewer");
+        viewer.setAttribute("src", "/bundle-hero.glb");
+        viewer.setAttribute("poster", "/bundle-hero.webp");
+        viewer.setAttribute("camera-controls", "");
+        viewer.setAttribute("auto-rotate", "");
+        viewer.setAttribute("auto-rotate-delay", "1200");
+        viewer.setAttribute("rotation-per-second", "12deg");
+        viewer.setAttribute("interaction-prompt", "none");
+        viewer.setAttribute("tone-mapping", "neutral");
+        viewer.setAttribute("shadow-intensity", "1");
+        viewer.setAttribute("exposure", "1.1");
+        viewer.setAttribute("disable-zoom", "");
+        viewer.setAttribute("disable-pan", "");
+        viewer.classList.add("bundle-viewer");
+        viewer.setAttribute("aria-label", "Interactive 3D bundle artifact");
+        viewer.style.cssText =
+          "width:100%;height:100%;display:block;background:transparent;pointer-events:auto;";
+
+        slot.appendChild(viewer);
+        slot.setAttribute("aria-hidden", "false");
+
+        // Wait one frame for the viewer to size itself, then fade
+        requestAnimationFrame(() => {
+          root.classList.add("is-3d");
+          loaded = true;
+          if (labelEl) labelEl.textContent = "back to static";
+          if (metaEl) metaEl.textContent = "tap to hide";
+          toggle.classList.remove("is-loading");
+          toggle.disabled = false;
+        });
+      } catch {
+        toggle.classList.remove("is-loading");
+        toggle.disabled = false;
+        if (labelEl) labelEl.textContent = "load failed";
+        if (metaEl) metaEl.textContent = "tap to retry";
+      }
+    });
+
+    // Allow toggling back to static
+    toggle.addEventListener("click", () => {
+      if (!loaded) return;
+      const isOn = root.classList.toggle("is-3d");
+      const labelEl = toggle.querySelector<HTMLElement>(".toggle-label");
+      const metaEl = toggle.querySelector<HTMLElement>(".toggle-meta");
+      if (labelEl) labelEl.textContent = isOn ? "back to static" : "rotate in 3D";
+      if (metaEl) metaEl.textContent = isOn ? "tap to hide" : "loaded · ready";
+    });
+  }
+</script>
 
 <style>
   .bundle {
@@ -167,88 +141,214 @@ const layers = [
     padding: var(--space-l) 0;
   }
 
-  .bundle-svg {
+  .bundle-frame {
+    position: relative;
     width: 100%;
-    max-width: 620px;
-    height: auto;
-    display: block;
-    overflow: visible;
+    max-width: 460px;
+    aspect-ratio: 1 / 1;
+    display: grid;
+    grid-template-areas: "stage";
+    place-items: stretch;
   }
 
+  .bundle-frame > * {
+    grid-area: stage;
+  }
+
+  /* Amber edge glow on top of the model — kept amber for the 'top is the
+     hero layer' signal we lost when the texture went all-teal */
+  .bundle-glow {
+    position: absolute;
+    inset: 8% 12% 30% 12%;
+    background:
+      radial-gradient(
+        60% 50% at 50% 30%,
+        rgb(232 163 61 / 0.28) 0%,
+        rgb(232 163 61 / 0.10) 35%,
+        transparent 70%
+      );
+    filter: blur(28px);
+    pointer-events: none;
+    z-index: 3;
+    mix-blend-mode: screen;
+    opacity: 0;
+    animation:
+      bundle-in 700ms var(--ease-out) 200ms forwards,
+      bundle-glow-pulse 6.4s var(--ease-in-out) 900ms infinite;
+  }
+
+  @keyframes bundle-glow-pulse {
+    0%, 100% { opacity: 0.85; }
+    50% { opacity: 1; }
+  }
+
+  .bundle-img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    opacity: 0;
+    animation:
+      bundle-in 700ms var(--ease-out) 200ms forwards,
+      bundle-float 5.4s var(--ease-in-out) 900ms infinite;
+    /* Filter chain: hue-rotate pushes the baked amber/copper → smoke teal,
+       saturate(0.85) softens the result so it sits in the Mr. Robot palette.
+       Drop-shadows apply after (their colors are independent of hue-rotate). */
+    filter:
+      hue-rotate(155deg)
+      saturate(0.78)
+      brightness(0.96)
+      drop-shadow(0 24px 32px rgb(0 0 0 / 0.55))
+      drop-shadow(0 0 28px rgb(79 140 126 / 0.18));
+    transition: opacity 360ms var(--ease-out);
+  }
+
+  @keyframes bundle-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  @keyframes bundle-in {
+    to { opacity: 1; }
+  }
+
+  /* 3D viewer slot — same grid cell as the image, hidden until is-3d */
+  .bundle-3d {
+    z-index: 2;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 360ms var(--ease-out);
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* model-viewer is appended dynamically; reach it via :global */
+  .bundle-3d :global(model-viewer) {
+    width: 100% !important;
+    height: 100% !important;
+    background-color: transparent;
+    --poster-color: transparent;
+    display: block;
+    /* same hue shift on the live 3D so static + interactive match */
+    filter: hue-rotate(155deg) saturate(0.78) brightness(0.96);
+  }
+
+  /* When 3D is active: fully hide the static, fade in the viewer */
+  .is-3d .bundle-img {
+    /* !important needed to override animation-fill-mode: forwards */
+    opacity: 0 !important;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 240ms, visibility 0s linear 240ms;
+  }
+
+  .is-3d .bundle-glow {
+    /* Hide the amber halo too — the live 3D scene has its own lighting */
+    opacity: 0 !important;
+    visibility: hidden;
+    transition: opacity 240ms, visibility 0s linear 240ms;
+  }
+
+  .is-3d .bundle-3d {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ─── Caption ────────────────────────────────── */
   .bundle-caption {
     font-family: var(--font-mono);
     font-size: var(--step--1);
     color: var(--muted);
     letter-spacing: 0.04em;
-  }
-
-  /* Float the elevated top layer */
-  .layer-top {
-    transform-origin: 260px 110px;
-    animation: float 5.4s var(--ease-in-out) infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
-  }
-
-  /* Stagger a subtle reveal */
-  .layer {
+    display: inline-flex;
+    gap: 0.6ch;
+    align-items: baseline;
     opacity: 0;
-    animation: layer-in 420ms var(--ease-out) forwards;
+    animation: bundle-in 700ms var(--ease-out) 1000ms forwards;
   }
+  .caption-strong { color: var(--text); }
+  .caption-sep { color: var(--border); }
 
-  .layer-top { animation-delay: 700ms, 0s; }
-  .layer-1 { animation-delay: 800ms; }
-  .layer-2 { animation-delay: 880ms; }
-  .layer-3 { animation-delay: 960ms; }
-  .layer-4 { animation-delay: 1040ms; }
-
-  .connector {
+  /* ─── 3D toggle button ───────────────────────── */
+  .bundle-3d-toggle {
+    margin-top: var(--space-2xs);
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-s);
+    padding: var(--space-2xs) var(--space-m);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-l);
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      background var(--duration-fast) var(--ease-out);
     opacity: 0;
-    animation: layer-in 360ms var(--ease-out) forwards;
+    animation: bundle-in 700ms var(--ease-out) 1200ms forwards;
   }
 
-  .connector:nth-of-type(1) { animation-delay: 1150ms; }
-  .connector:nth-of-type(2) { animation-delay: 1230ms; }
-  .connector:nth-of-type(3) { animation-delay: 1310ms; }
-  .connector:nth-of-type(4) { animation-delay: 1390ms; }
-  .connector:nth-of-type(5) { animation-delay: 1470ms; }
+  .bundle-3d-toggle:hover,
+  .bundle-3d-toggle:focus-visible {
+    color: var(--text-strong);
+    border-color: var(--accent);
+    background: var(--surface);
+    outline: none;
+  }
 
-  @keyframes layer-in {
-    to { opacity: 1; }
+  .bundle-3d-toggle.is-loading {
+    border-color: var(--accent);
+    color: var(--accent);
+    cursor: progress;
+  }
+
+  .toggle-icon {
+    color: var(--accent);
+    font-size: 0.85em;
+  }
+
+  .toggle-meta {
+    color: var(--muted);
+    padding-left: var(--space-s);
+    position: relative;
+  }
+
+  .toggle-meta::before {
+    content: "·";
+    color: var(--border);
+    position: absolute;
+    left: calc(var(--space-xs) * -0.4);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .is-3d .toggle-icon {
+    /* Pause symbol when 3D is on */
+    transform: rotate(90deg);
+    display: inline-block;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .layer,
-    .connector {
+    .bundle-img,
+    .bundle-glow,
+    .bundle-caption,
+    .bundle-3d-toggle {
+      animation: none;
       opacity: 1;
-      animation: none;
-    }
-    .layer-top {
-      animation: none;
     }
   }
 
-  /* Mobile: shrink labels, then hide entirely on phones */
-  @media (max-width: 640px) {
-    .bundle-svg {
-      max-width: 480px;
-    }
-
-    .connector text {
-      font-size: 9.5px;
-    }
+  @media (max-width: 540px) {
+    .bundle-frame { max-width: 320px; }
+    .toggle-meta { display: none; }
   }
-
-  @media (max-width: 420px) {
-    .connector {
-      display: none;
-    }
-
-    .bundle-svg {
-      max-width: 280px;
-    }
+  @media (max-width: 380px) {
+    .bundle-frame { max-width: 260px; }
   }
 </style>
