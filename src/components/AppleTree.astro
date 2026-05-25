@@ -156,7 +156,10 @@ const kept = [
   const shakeTree = () => {
     if (!svg) return;
     svg.classList.remove("tree-shaken");
-    void svg.offsetWidth;
+    // Force a reflow so the class re-add restarts the animation.
+    // SVGSVGElement doesn't have offsetWidth, but getBoundingClientRect
+    // synchronously triggers layout the same way.
+    svg.getBoundingClientRect();
     svg.classList.add("tree-shaken");
   };
 

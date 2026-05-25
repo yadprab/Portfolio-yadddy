@@ -153,7 +153,6 @@ const phases = [
   },
 ];
 
-const totalLines = phases.reduce((s, p) => s + p.lines.length, 0);
 const totalSteps = phases.length;
 ---
 
@@ -237,7 +236,9 @@ const totalSteps = phases.length;
   </main>
 </Layout>
 
-<script define:vars={{ phases }}>
+<script is:inline define:vars={{ phases }}>
+  // `phases` is injected at build time by `define:vars` — declared global
+  // for the inline runtime (no TS context). All references below are JS.
   const term = document.querySelector("[data-terminal]");
   const expl = document.querySelector("[data-explainer]");
   const stepNum = document.querySelector("[data-step-num]");

@@ -268,7 +268,7 @@ const totalItems = shopItems.length;
 
             {scenarios.map((s, i) => (
               <div
-                class={`chef-reaction reaction-${s.verdict ?? s.install.verdict}`}
+                class={`chef-reaction reaction-${s.install.verdict}`}
                 data-scenario={s.id}
                 style={`--initial: ${i === 0 ? "block" : "none"};`}
               >
